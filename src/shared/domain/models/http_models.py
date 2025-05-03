@@ -1,0 +1,1 @@
+# Aguardando contrato de Request e Response para o modelo de IA
