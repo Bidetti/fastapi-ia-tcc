@@ -14,11 +14,6 @@ class Settings:
         # DynamoDB
         self.DYNAMODB_TABLE_NAME = os.getenv("DYNAMODB_TABLE_NAME", "ia-results")
         
-        # S3
-        self.S3_BUCKET_ORIGINAL_IMAGES_MATURATION = os.getenv("S3_BUCKET_ORIGINAL_IMAGES_MATURATION", "ia-images-maturation")
-        self.S3_BUCKET_ORIGINAL_IMAGES_DETECTION = os.getenv("S3_BUCKET_ORIGINAL_IMAGES_DETECTION", "ia-images-detection")
-        self.S3_BUCKET_RESULT_IMAGES = os.getenv("S3_BUCKET_RESULT_IMAGES", "ia-images-results")
-        
         # EC2
         self.EC2_IA_ENDPOINT = os.getenv("EC2_IA_ENDPOINT", "http://localhost:8001")
         self.DETECTION_ENDPOINT = f"{self.EC2_IA_ENDPOINT}/detect"
