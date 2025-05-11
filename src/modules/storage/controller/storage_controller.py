@@ -9,14 +9,8 @@ from ....shared.domain.models.http_models import (
 )
 from ..usecase.image_upload_usecase import ImageUploadUseCase
 from ..usecase.get_result_usecase import GetResultUseCase
-
-# Configuração de logging
 logger = logging.getLogger(__name__)
-
-# Cria o router
 storage_router = APIRouter(prefix="/storage", tags=["Storage"])
-
-# Dependências
 def get_image_upload_usecase():
     return ImageUploadUseCase()
 

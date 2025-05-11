@@ -30,7 +30,6 @@ class S3Repository(S3RepositoryInterface):
         self.results_bucket = results_bucket
         self.region = region or settings.AWS_REGION
         
-        # Cria clientes para cada bucket
         self.images_client = S3Client(bucket_name=images_bucket, region=self.region)
         self.results_client = S3Client(bucket_name=results_bucket, region=self.region)
         
@@ -67,16 +66,13 @@ class S3Repository(S3RepositoryInterface):
         Returns:
             str: Chave gerada
         """
-        # Extrai a extensão do arquivo
         if "." in original_filename:
             ext = original_filename.split(".")[-1]
         else:
-            ext = "jpg"  # Extensão padrão
+            ext = "jpg"
         
-        # Gera um ID único
         unique_id = str(uuid.uuid4())
         
-        # Retorna a chave no formato: user_id/ano/mês/dia/uuid.extensão
         from datetime import datetime
         now = datetime.utcnow()
         return f"{user_id}/{now.year}/{now.month:02d}/{now.day:02d}/{unique_id}.{ext}"
@@ -124,7 +120,6 @@ class S3Repository(S3RepositoryInterface):
         Returns:
             str: URL do arquivo no S3
         """
-        # Gera uma chave para o resultado baseada na imagem original
         result_key = original_key.replace(".jpg", f"_{result_type}.jpg")
         
         logger.info(f"Fazendo upload de imagem de resultado para o S3: {result_key}")
