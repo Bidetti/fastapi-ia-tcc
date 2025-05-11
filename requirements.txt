@@ -3,3 +3,4 @@ uvicorn==0.27.0
 mangum==0.17.0
 boto3==1.34.25
 python-multipart==0.0.7
+aiohttp==3.9.1

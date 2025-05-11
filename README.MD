@@ -23,7 +23,7 @@ Este projeto implementa uma API FastAPI hospedada em AWS Lambda para processamen
 
 ![Arquitetura](https://app.diagrams.net/?dark=0#G1Bk6VyCvnHJqrIjZAiNT3TO1Xj0ih07Am)
 
-A arquitetura do projeto para a primeira entrega consiste em:
+O sistema utiliza uma arquitetura serverless na AWS com os seguintes componentes:
 
 1. **Frontend** - Interface React para visualização dos resultados
 2. **API Layer** - API Gateway + endpoints REST implementados com FastAPI
@@ -33,12 +33,14 @@ A arquitetura do projeto para a primeira entrega consiste em:
 
 ## Funcionalidades
 
-- **Detecção de Objetos**: Processamento de imagens com modelos de detecção
-- **Análise de Maturação**: Avaliação do estágio de maturação em imagens
+- **Upload de Imagens**: Permite o envio de imagens diretamente para o S3 via URLs pré-assinadas
+- **Detecção de Objetos**: Identifica frutas em imagens utilizando modelos de IA
+- **Análise de Maturação**: Avalia o estágio de maturação das frutas detectadas
 - **Armazenamento de Resultados**: Persistência de imagens e metadados
-- **Consulta de Resultados**: Recuperação de resultados de processamentos anteriores
+- **Visualização de Resultados**: Exibe os resultados do processamento com marcações visuais
+- **Histórico de Análises**: Mantém um registro das análises anteriores
 
-## Tecnologias Utilizadas
+## Back-End
 
 - **Python 3.9**: Linguagem de programação
 - **FastAPI**: Framework para APIs
@@ -48,20 +50,24 @@ A arquitetura do projeto para a primeira entrega consiste em:
 - **S3**: Armazenamento de objetos para imagens
 - **EC2**: Hospedagem de modelos de IA
 - **Mangum**: Adaptador para AWS Lambda
+
+## Implantação
 - **GitHub Actions**: CI/CD automatizado
 
 ## Estrutura do Projeto
 
 ```
 projeto-fastapi-lambda/
-├── .github/workflows/           # Configurações do GitHub Actions
-├── src/                         # Código-fonte
-│   ├── app/                     # Aplicação principal
-│   ├── modules/                 # Módulos de funcionalidades
-│   └── shared/                  # Código compartilhado
-├── tests/                       # Testes automatizados
-├── requirements.txt             # Dependências de produção
-└── requirements-dev.txt         # Dependências de desenvolvimento
+├── .github/workflows/         # Configurações do GitHub Actions
+├── src/                       # Código-fonte
+│   ├── app/                   # Aplicação principal
+│   ├── modules/               # Módulos de funcionalidades
+│   │   ├── ia_integration/    # Integração com modelos de IA
+│   │   └── storage/           # Gerenciamento de armazenamento
+│   └── shared/                # Código compartilhado
+├── tests/                     # Testes automatizados
+├── requirements.txt          # Dependências de produção
+└── requirements-dev.txt      # Dependências de desenvolvimento
 ```
 
 ## Como executar localmente

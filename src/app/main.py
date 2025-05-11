@@ -4,6 +4,8 @@ from contextlib import asynccontextmanager
 import logging
 
 from .config import settings
+from ..modules.ia_integration.controller.ia_controller import ia_router
+from ..modules.storage.controller.storage_controller import storage_router
 
 logging.basicConfig(
     level=logging.INFO,
@@ -34,15 +36,25 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Configuração de rotas
+app.include_router(ia_router)
+app.include_router(storage_router)
 
 @app.get("/health-check", tags=["Health"])
 async def health_check():
-    """Endpoint para verificar a saúde da API"""
+    """Endpoint para verificar a saúde da API."""
     return {
         "status": "healthy",
         "environment": settings.ENVIRONMENT,
         "version": app.version
+    }
+
+@app.get("/", tags=["Root"])
+async def root():
+    """Endpoint raiz para teste."""
+    return {
+        "message": "API de IA para Detecção e Maturação de Frutas",
+        "docs": "/docs",
+        "health": "/health-check"
     }
 
 if __name__ == "__main__":
