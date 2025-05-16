@@ -25,17 +25,24 @@ async def process_image(
 ):
     """Processa uma imagem usando o modelo de IA selecionado."""
     try:
+        metadata = None
+        if request.metadata:
+            try:
+                metadata = request.metadata.model_dump()
+            except Exception as e:
+                raise HTTPException(status_code=400, detail=f"Erro ao processar metadados: {str(e)}")
+        
         if request.model_type == ModelType.DETECTION:
             result = await detect_usecase.execute(
                 image_url=str(request.image_url),
                 user_id=request.user_id,
-                metadata=request.metadata.dict() if request.metadata else None
+                metadata=metadata
             )
         elif request.model_type == ModelType.MATURATION:
             result = await maturation_usecase.execute(
                 image_url=str(request.image_url),
                 user_id=request.user_id,
-                metadata=request.metadata.dict() if request.metadata else None
+                metadata=metadata
             )
         else:
             raise HTTPException(status_code=400, detail=f"Tipo de modelo inválido: {request.model_type}")
