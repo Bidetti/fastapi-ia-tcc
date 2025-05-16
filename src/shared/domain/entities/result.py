@@ -22,7 +22,7 @@ class DetectionResult:
     def to_dict(self) -> Dict[str, Any]:
         """Converte a entidade para dicionário."""
         return {
-            "class": self.class_name,
+            "class_name": self.class_name,
             "confidence": self.confidence,
             "bounding_box": self.bounding_box,
             "maturation_level": self.maturation_level
@@ -32,7 +32,7 @@ class DetectionResult:
     def from_dict(cls, data: Dict[str, Any]) -> "DetectionResult":
         """Cria uma instância a partir de um dicionário."""
         return cls(
-            class_name=data["class"],
+            class_name=data["class_name"],
             confidence=data["confidence"],
             bounding_box=data["bounding_box"],
             maturation_level=data.get("maturation_level")

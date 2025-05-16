@@ -1,3 +1,4 @@
+from dotenv import load_dotenv
 import pytest
 import os
 import sys
@@ -68,7 +69,7 @@ def mock_dynamo_client():
             "request_id": "test-request-id",
             "model_type": "detection",
             "results": json.dumps([{
-                "class": "apple",
+                "class_name": "apple",
                 "confidence": 0.95,
                 "bounding_box": [0.1, 0.1, 0.2, 0.2]
             }]),
@@ -77,6 +78,8 @@ def mock_dynamo_client():
             "summary": json.dumps({"total_objects": 1}),
             "image_result_url": "https://test-bucket.s3.amazonaws.com/results/test-key"
         }])
+
+        
         
         yield dynamo_client_instance
 
@@ -90,7 +93,7 @@ def mock_ec2_client():
             "status": "success",
             "request_id": "test-request-id",
             "results": [{
-                "class": "apple",
+                "class_name": "apple",
                 "confidence": 0.95,
                 "bounding_box": [0.1, 0.1, 0.2, 0.2]
             }],
@@ -103,7 +106,7 @@ def mock_ec2_client():
             "status": "success",
             "request_id": "test-request-id",
             "results": [{
-                "class": "apple",
+                "class_name": "apple",
                 "confidence": 0.95,
                 "bounding_box": [0.1, 0.1, 0.2, 0.2],
                 "maturation_level": {
@@ -250,20 +253,20 @@ def mock_dynamo_repository():
         
         # Mock para get_result_by_request_id
         dynamo_repo_instance.get_result_by_request_id = AsyncMock(side_effect=lambda request_id: 
-            sample_detection_result() if request_id == "test-request-id" else 
-            sample_maturation_result() if request_id == "test-maturation-id" else None
+            create_sample_detection_result() if request_id == "test-request-id" else 
+            create_sample_maturation_result() if request_id == "test-maturation-id" else None
         )
-        
+
         # Mock para get_results_by_image_id
         dynamo_repo_instance.get_results_by_image_id = AsyncMock(return_value=[
-            sample_detection_result(),
-            sample_maturation_result()
+            create_sample_detection_result(),
+            create_sample_maturation_result()
         ])
-        
+
         # Mock para get_results_by_user_id
         dynamo_repo_instance.get_results_by_user_id = AsyncMock(return_value=[
-            sample_detection_result(),
-            sample_maturation_result()
+            create_sample_detection_result(),
+            create_sample_maturation_result()
         ])
         
         yield dynamo_repo_instance
@@ -280,7 +283,7 @@ def mock_ia_repository():
                 model_type=ModelType.DETECTION,
                 results=[
                     DetectionResult(
-                        class_name="apple",
+                        class_name="banana",
                         confidence=0.95,
                         bounding_box=[0.1, 0.1, 0.2, 0.2]
                     )
@@ -288,7 +291,7 @@ def mock_ia_repository():
                 status="success",
                 request_id="test-request-id",
                 summary={"total_objects": 1, "detection_time_ms": 350},
-                image_result_url="https://test-bucket.s3.amazonaws.com/results/test-key"
+                image_result_url="https://fruit-analysis.com/results/banana_detection_result.jpg"
             )
         )
         
@@ -317,3 +320,44 @@ def mock_ia_repository():
         )
         
         yield ia_repo_instance
+
+def create_sample_detection_result():
+    """Helper function that creates a sample detection result without using the fixture"""
+    detection_result = DetectionResult(
+        class_name="apple",
+        confidence=0.95,
+        bounding_box=[0.1, 0.1, 0.2, 0.2]
+    )
+    
+    return ProcessingResult(
+        image_id="test-image-id",
+        model_type=ModelType.DETECTION,
+        results=[detection_result],
+        status="success",
+        request_id="test-request-id",
+        summary={"total_objects": 1, "detection_time_ms": 350},
+        image_result_url="https://test-bucket.s3.amazonaws.com/results/test-key"
+    )
+
+def create_sample_maturation_result():
+    """Helper function that creates a sample maturation result without using the fixture"""
+    detection_result = DetectionResult(
+        class_name="apple",
+        confidence=0.95,
+        bounding_box=[0.1, 0.1, 0.2, 0.2],
+        maturation_level={
+            "score": 0.8,
+            "category": "ripe",
+            "estimated_days_until_spoilage": 3
+        }
+    )
+    
+    return ProcessingResult(
+        image_id="test-image-id",
+        model_type=ModelType.MATURATION,
+        results=[detection_result],
+        status="success",
+        request_id="test-maturation-id",
+        summary={"average_maturation_score": 0.8, "detection_time_ms": 450},
+        image_result_url="https://test-bucket.s3.amazonaws.com/results/test-key"
+    )

@@ -19,14 +19,22 @@ class EC2Client:
     async def _make_request(self, url: str, payload: Dict[str, Any]) -> Dict[str, Any]:
         try:
             async with aiohttp.ClientSession() as session:
-                async with session.post(url, json=payload, timeout=self.timeout) as response:
+                async with session.post(
+                    url, 
+                    json=payload,
+                    timeout=self.timeout
+                ) as response:
                     if response.status != 200:
                         error_text = await response.text()
+                        logger.error(f"Erro na resposta da API de IA: {response.status} - {error_text}")
                         return {"status": "error", "error_message": f"Erro {response.status}: {error_text}"}
+                    
                     return await response.json()
         except aiohttp.ClientError as e:
+            logger.error(f"Erro ao conectar à API de IA: {e}")
             return {"status": "error", "error_message": f"Erro de conexão: {str(e)}"}
         except Exception as e:
+            logger.error(f"Erro inesperado ao processar requisição: {e}")
             return {"status": "error", "error_message": f"Erro inesperado: {str(e)}"}
     
     async def detect_objects(self, image_url: str, metadata: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:

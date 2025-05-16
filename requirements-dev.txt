@@ -5,3 +5,4 @@ pytest-cov==4.1.0
 ruff==0.0.289
 black==23.7.0
 python-dotenv==1.0.0
+httpx==0.24.1
