@@ -4,8 +4,8 @@ import logging
 from datetime import datetime
 import json
 
-from domain.entities.image import Image
-from domain.entities.result import ProcessingResult
+from src.shared.domain.entities.image import Image
+from src.shared.domain.entities.result import ProcessingResult
 from src.app.config import settings
 
 logger = logging.getLogger(__name__)

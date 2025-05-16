@@ -1,11 +1,11 @@
 from typing import Dict, Any, Optional
 import logging
 
-from ....shared.domain.entities.image import Image
-from ....shared.domain.entities.result import ProcessingResult
-from ....shared.domain.enums.ia_model_type_enum import ModelType
-from ..repo.ia_repository import IARepository
-from ...storage.repo.dynamo_repository import DynamoRepository
+from src.shared.domain.entities.image import Image
+from src.shared.domain.entities.result import ProcessingResult
+from src.shared.domain.enums.ia_model_type_enum import ModelType
+from src.modules.ia_integration.repo.ia_repository import IARepository
+from src.modules.storage.repo.dynamo_repository import DynamoRepository
 
 logger = logging.getLogger(__name__)
 

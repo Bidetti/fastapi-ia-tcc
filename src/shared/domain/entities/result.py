@@ -1,7 +1,7 @@
 from typing import Dict, List, Optional, Any, Union
-from datetime import datetime
+from datetime import datetime, timezone
 from uuid import uuid4
-from ..enums.ia_model_type_enum import ModelType
+from src.shared.domain.enums.ia_model_type_enum import ModelType
 
 
 class DetectionResult:
@@ -59,7 +59,7 @@ class ProcessingResult:
         self.model_type = model_type
         self.results = results
         self.status = status
-        self.processing_timestamp = processing_timestamp or datetime.utcnow()
+        self.processing_timestamp = processing_timestamp or datetime.now(timezone.utc)
         self.summary = summary or {}
         self.image_result_url = image_result_url
         self.error_message = error_message

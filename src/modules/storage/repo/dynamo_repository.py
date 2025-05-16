@@ -2,11 +2,11 @@ from typing import Dict, List, Optional, Any
 import logging
 
 
-from shared.infra.repo.dynamo_repository_interface import DynamoRepositoryInterface
-from shared.infra.external.dynamo.dynamo_client import DynamoClient
-from shared.domain.entities.image import Image
-from shared.domain.entities.result import ProcessingResult
-from shared.domain.entities.combined_result import CombinedResult
+from src.shared.infra.repo.dynamo_repository_interface import DynamoRepositoryInterface
+from src.shared.infra.external.dynamo.dynamo_client import DynamoClient
+from src.shared.domain.entities.image import Image
+from src.shared.domain.entities.result import ProcessingResult
+from src.shared.domain.entities.combined_result import CombinedResult
 
 logger = logging.getLogger(__name__)
 

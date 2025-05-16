@@ -1,5 +1,5 @@
 from typing import Dict, Optional, Any
-from datetime import datetime
+from datetime import datetime, timezone
 from uuid import uuid4
 
 
@@ -18,7 +18,7 @@ class Image:
         self.image_url = image_url
         self.user_id = user_id
         self.metadata = metadata or {}
-        self.upload_timestamp = upload_timestamp or datetime.utcnow()
+        self.upload_timestamp = upload_timestamp or datetime.now(timezone.utc)
     
     def to_dict(self) -> Dict[str, Any]:
         """Converte a entidade para dicionário."""

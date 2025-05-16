@@ -2,9 +2,9 @@ from typing import Dict, Optional, Any, BinaryIO
 from datetime import timedelta
 import logging
 
-from ....shared.domain.entities.image import Image
-from ...storage.repo.s3_repository import S3Repository
-from ...storage.repo.dynamo_repository import DynamoRepository
+from src.shared.domain.entities.image import Image
+from src.modules.storage.repo.s3_repository import S3Repository
+from src.modules.storage.repo.dynamo_repository import DynamoRepository
 
 logger = logging.getLogger(__name__)
 

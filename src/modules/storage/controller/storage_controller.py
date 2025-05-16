@@ -2,13 +2,13 @@ from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form, Q
 from typing import Optional, List
 import logging
 
-from ....shared.domain.models.http_models import (
+from src.shared.domain.models.http_models import (
     PresignedUrlRequest,
     PresignedUrlResponse,
     ProcessingResponse
 )
-from ..usecase.image_upload_usecase import ImageUploadUseCase
-from ..usecase.get_result_usecase import GetResultUseCase
+from src.modules.storage.usecase.image_upload_usecase import ImageUploadUseCase
+from src.modules.storage.usecase.get_result_usecase import GetResultUseCase
 logger = logging.getLogger(__name__)
 storage_router = APIRouter(prefix="/storage", tags=["Storage"])
 def get_image_upload_usecase():

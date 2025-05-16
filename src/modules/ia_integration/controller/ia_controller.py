@@ -1,14 +1,14 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from typing import Optional, List
 
-from ....shared.domain.models.http_models import (
+from src.shared.domain.models.http_models import (
     ProcessImageRequest,
     ProcessingResponse,
     ProcessingStatusResponse
 )
-from ....shared.domain.enums.ia_model_type_enum import ModelType
-from ..usecase.detect_usecase import DetectUseCase
-from ..usecase.maturation_usecase import MaturationUseCase
+from src.shared.domain.enums.ia_model_type_enum import ModelType
+from src.modules.ia_integration.usecase.detect_usecase import DetectUseCase
+from src.modules.ia_integration.usecase.maturation_usecase import MaturationUseCase
 
 ia_router = APIRouter(prefix="/ia", tags=["IA"])
 def get_detect_usecase():

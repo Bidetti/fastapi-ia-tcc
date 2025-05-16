@@ -1,8 +1,8 @@
 from typing import Dict, List, Optional, Any
 import logging
 
-from ....shared.domain.entities.result import ProcessingResult
-from ...storage.repo.dynamo_repository import DynamoRepository
+from src.shared.domain.entities.result import ProcessingResult
+from src.modules.storage.repo.dynamo_repository import DynamoRepository
 
 logger = logging.getLogger(__name__)
 

@@ -3,7 +3,7 @@ from pydantic import BaseModel, HttpUrl, Field
 from datetime import datetime
 from uuid import UUID
 
-from ..enums.ia_model_type_enum import ModelType
+from src.shared.domain.enums.ia_model_type_enum import ModelType
 
 
 class ImageMetadata(BaseModel):

@@ -1,11 +1,11 @@
 from typing import Dict, Any, Optional, List
 import logging
 
-from shared.infra.repo.ia_repository_interface import IARepositoryInterface
-from shared.infra.external.ec2.ec2_client import EC2Client
-from shared.domain.entities.image import Image
-from shared.domain.entities.result import ProcessingResult, DetectionResult
-from shared.domain.enums.ia_model_type_enum import ModelType
+from src.shared.infra.repo.ia_repository_interface import IARepositoryInterface
+from src.shared.infra.external.ec2.ec2_client import EC2Client
+from src.shared.domain.entities.image import Image
+from src.shared.domain.entities.result import ProcessingResult, DetectionResult
+from src.shared.domain.enums.ia_model_type_enum import ModelType
 
 logger = logging.getLogger(__name__)
 
