@@ -34,19 +34,19 @@ pip install -r requirements-dev.txt
 2. Execute os testes:
 ```bash
 # Execute todos os testes (com configuração personalizada)
-python -m pytest --confcutdir=. --pythonpath=. -c pytest.ini
+python -m pytest
 
 # Execute com detalhes verbose
-python -m pytest --confcutdir=. --pythonpath=. -c pytest.ini -v
+python -m pytest -v
 
 # Execute apenas testes unitários
-python -m pytest --confcutdir=. --pythonpath=. -c pytest.ini tests/unit/
+python -m pytest tests/unit/
 
 # Execute apenas testes de integração
-python -m pytest --confcutdir=. --pythonpath=. -c pytest.ini tests/integration/
+python -m pytest tests/integration/
 
 # Execute com relatório de cobertura
-python -m pytest --confcutdir=. --pythonpath=. -c pytest.ini --cov=src tests/
+python -m pytest --cov=src tests/
 ```
 
 ## Configuração do Ambiente de Teste

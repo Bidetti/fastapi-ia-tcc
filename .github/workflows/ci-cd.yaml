@@ -37,22 +37,22 @@ jobs:
 
       - name: Executar testes
         run: |
-          pytest --confcutdir=. --pythonpath=. -c pytest.ini
+          pytest
 
       - name: Verificar cobertura de testes (somente para main)
         if: github.event_name == 'pull_request' && github.base_ref == 'main' || github.ref == 'refs/heads/main'
         run: |
-          pytest --confcutdir=. --pythonpath=. -c pytest.ini --cov=src tests/ --cov-report=term --cov-fail-under=80
+          pytest --cov=src tests/ --cov-report=term --cov-fail-under=80
 
       - name: Gerar relatório de cobertura básico (para develop)
         if: github.event_name == 'pull_request' && github.base_ref == 'develop'
         run: |
-          pytest --confcutdir=. --pythonpath=. -c pytest.ini --cov=src tests/ --cov-report=xml
+          pytest --cov=src tests/ --cov-report=xml
 
       - name: Gerar relatório de cobertura detalhado (para main)
         if: github.event_name == 'pull_request' && github.base_ref == 'main' || github.ref == 'refs/heads/main'
         run: |
-          pytest --confcutdir=. --pythonpath=. -c pytest.ini --cov=src tests/ --cov-report=xml
+          pytest --cov=src tests/ --cov-report=xml
 
       - name: Upload do relatório de cobertura para Codecov
         uses: codecov/codecov-action@v3
@@ -63,57 +63,21 @@ jobs:
       - name: Notificar equipe sobre testes no Discord
         if: success()
         run: |
-          echo "Testes concluídos com sucesso!"
-
           COMMIT_MESSAGE=$(git log -1 --pretty=format:"%s")
           COMMIT_AUTHOR=$(git log -1 --pretty=format:"%an")
           COMMIT_LINK="${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}"
-
-          payload=$(cat <<EOF
-          {
-            "embeds": [
-              {
-                "title": "✅ Testes Concluídos com Sucesso!",
-                "description": "Os testes e verificações de qualidade foram executados com sucesso.",
-                "color": 3066993,
-                "fields": [
-                  {
-                    "name": "Repositório",
-                    "value": "[${{ github.repository }}](${{ github.server_url }}/${{ github.repository }})",
-                    "inline": true
-                  },
-                  {
-                    "name": "Branch",
-                    "value": "${{ github.ref_name }}",
-                    "inline": true
-                  },
-                  {
-                    "name": "Commit",
-                    "value": "[$COMMIT_MESSAGE]($COMMIT_LINK)",
-                    "inline": false
-                  },
-                  {
-                    "name": "Autor",
-                    "value": "$COMMIT_AUTHOR",
-                    "inline": true
-                  },
-                  {
-                    "name": "Concluído em",
-                    "value": "$(date '+%d/%m/%Y %H:%M:%S')",
-                    "inline": true
-                  }
-                ],
-                "footer": {
-                  "text": "TCC Detecção e Maturação de Frutas"
-                }
-              }
-            ]
-          }
-          EOF
-          )
-
-          curl -H "Content-Type: application/json" -d "$payload" ${{ secrets.DISCORD_WEBHOOK }}
-
+          CURRENT_DATE=$(date '+%d/%m/%Y %H:%M:%S')
+          
+          curl -H "Content-Type: application/json" -d "{\"embeds\":[{\"title\":\"✅ Testes Concluídos com Sucesso!\",\"description\":\"Os testes e verificações de qualidade foram executados com sucesso.\",\"color\":3066993,\"fields\":[{\"name\":\"Repositório\",\"value\":\"[${{ github.repository }}](${{ github.server_url }}/${{ github.repository }})\",\"inline\":true},{\"name\":\"Branch\",\"value\":\"${{ github.ref_name }}\",\"inline\":true},{\"name\":\"Commit\",\"value\":\"[$COMMIT_MESSAGE]($COMMIT_LINK)\",\"inline\":false},{\"name\":\"Autor\",\"value\":\"$COMMIT_AUTHOR\",\"inline\":true},{\"name\":\"Concluído em\",\"value\":\"$CURRENT_DATE\",\"inline\":true}],\"footer\":{\"text\":\"TCC Detecção e Maturação de Frutas\"}}]}" ${{ secrets.DISCORD_WEBHOOK }}
+            - name: Notificar falha nos testes no Discord
+        if: failure()
+        run: |
+          COMMIT_MESSAGE=$(git log -1 --pretty=format:"%s")
+          COMMIT_AUTHOR=$(git log -1 --pretty=format:"%an")
+          COMMIT_LINK="${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}"
+          CURRENT_DATE=$(date '+%d/%m/%Y %H:%M:%S')
+          
+          curl -H "Content-Type: application/json" -d "{\"embeds\":[{\"title\":\"❌ Falha nos Testes!\",\"description\":\"Os testes ou verificações de qualidade falharam. Verifique os logs para mais detalhes.\",\"color\":15158332,\"fields\":[{\"name\":\"Repositório\",\"value\":\"[${{ github.repository }}](${{ github.server_url }}/${{ github.repository }})\",\"inline\":true},{\"name\":\"Branch\",\"value\":\"${{ github.ref_name }}\",\"inline\":true},{\"name\":\"Commit\",\"value\":\"[$COMMIT_MESSAGE]($COMMIT_LINK)\",\"inline\":false},{\"name\":\"Autor\",\"value\":\"$COMMIT_AUTHOR\",\"inline\":true},{\"name\":\"Falhou em\",\"value\":\"$CURRENT_DATE\",\"inline\":true}],\"footer\":{\"text\":\"TCC Detecção e Maturação de Frutas\"}}]}" ${{ secrets.DISCORD_WEBHOOK }}
   build:
     name: Build e Validação
     runs-on: ubuntu-latest
