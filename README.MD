@@ -21,7 +21,7 @@ Este projeto implementa uma API FastAPI hospedada em AWS Lambda para processamen
 
 ## Arquitetura
 
-![Arquitetura](https://app.diagrams.net/?dark=0#G1Bk6VyCvnHJqrIjZAiNT3TO1Xj0ih07Am)
+![Arquitetura](docs/images/arquitetura_1obanca.png)
 
 O sistema utiliza uma arquitetura serverless na AWS com os seguintes componentes:
 

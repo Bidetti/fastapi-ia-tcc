@@ -1,10 +1,8 @@
-import pytest
-from fastapi.testclient import TestClient
-import json
-from unittest.mock import patch, AsyncMock, MagicMock
+from unittest.mock import AsyncMock, MagicMock, patch
 
-from src.app.main import app
-from src.shared.domain.entities.result import ProcessingResult, DetectionResult
+import pytest
+
+from src.shared.domain.entities.result import DetectionResult, ProcessingResult
 from src.shared.domain.enums.ia_model_type_enum import ModelType
 
 
@@ -22,26 +20,29 @@ class TestIAEndpoints:
             },
         }
 
-        with patch(
-            "src.modules.ia_integration.usecase.detect_usecase.DetectUseCase.execute",
-            new_callable=AsyncMock,
-        ) as mock_detect, patch(
-            "src.modules.ia_integration.usecase.detect_usecase.IARepository",
-            new_callable=MagicMock,
-        ), patch(
-            "src.modules.ia_integration.usecase.detect_usecase.DynamoRepository",
-            new_callable=MagicMock,
-        ), patch(
-            "src.modules.ia_integration.repo.ia_repository.EC2Client",
-            new_callable=MagicMock,
-        ), patch(
-            "src.modules.storage.repo.dynamo_repository.DynamoClient",
-            new_callable=MagicMock,
+        with (
+            patch(
+                "src.modules.ia_integration.usecase.detect_usecase.DetectUseCase.execute",
+                new_callable=AsyncMock,
+            ) as mock_detect,
+            patch(
+                "src.modules.ia_integration.usecase.detect_usecase.IARepository",
+                new_callable=MagicMock,
+            ),
+            patch(
+                "src.modules.ia_integration.usecase.detect_usecase.DynamoRepository",
+                new_callable=MagicMock,
+            ),
+            patch(
+                "src.modules.ia_integration.repo.ia_repository.EC2Client",
+                new_callable=MagicMock,
+            ),
+            patch(
+                "src.modules.storage.repo.dynamo_repository.DynamoClient",
+                new_callable=MagicMock,
+            ),
         ):
-
-            detection_result = DetectionResult(
-                class_name="banana", confidence=0.95, bounding_box=[0.1, 0.1, 0.2, 0.2]
-            )
+            detection_result = DetectionResult(class_name="banana", confidence=0.95, bounding_box=[0.1, 0.1, 0.2, 0.2])
 
             mock_detect.return_value = ProcessingResult(
                 image_id="banana-img-47d23",
@@ -76,9 +77,7 @@ class TestIAEndpoints:
                 assert kwargs.get("user_id") == request_data["user_id"]
 
             metadata = kwargs.get("metadata", {})
-            assert (
-                metadata.get("device_info") == request_data["metadata"]["device_info"]
-            )
+            assert metadata.get("device_info") == request_data["metadata"]["device_info"]
             assert metadata.get("location") == request_data["metadata"]["location"]
 
     @pytest.mark.asyncio
@@ -94,23 +93,28 @@ class TestIAEndpoints:
             },
         }
 
-        with patch(
-            "src.modules.ia_integration.usecase.maturation_usecase.MaturationUseCase.execute",
-            new_callable=AsyncMock,
-        ) as mock_maturation, patch(
-            "src.modules.ia_integration.usecase.maturation_usecase.IARepository",
-            new_callable=MagicMock,
-        ), patch(
-            "src.modules.ia_integration.usecase.maturation_usecase.DynamoRepository",
-            new_callable=MagicMock,
-        ), patch(
-            "src.modules.ia_integration.repo.ia_repository.EC2Client",
-            new_callable=MagicMock,
-        ), patch(
-            "src.modules.storage.repo.dynamo_repository.DynamoClient",
-            new_callable=MagicMock,
+        with (
+            patch(
+                "src.modules.ia_integration.usecase.maturation_usecase.MaturationUseCase.execute",
+                new_callable=AsyncMock,
+            ) as mock_maturation,
+            patch(
+                "src.modules.ia_integration.usecase.maturation_usecase.IARepository",
+                new_callable=MagicMock,
+            ),
+            patch(
+                "src.modules.ia_integration.usecase.maturation_usecase.DynamoRepository",
+                new_callable=MagicMock,
+            ),
+            patch(
+                "src.modules.ia_integration.repo.ia_repository.EC2Client",
+                new_callable=MagicMock,
+            ),
+            patch(
+                "src.modules.storage.repo.dynamo_repository.DynamoClient",
+                new_callable=MagicMock,
+            ),
         ):
-
             detection_result = DetectionResult(
                 class_name="banana",
                 confidence=0.95,
@@ -154,9 +158,7 @@ class TestIAEndpoints:
                 assert kwargs.get("user_id") == request_data["user_id"]
 
             metadata = kwargs.get("metadata", {})
-            assert (
-                metadata.get("device_info") == request_data["metadata"]["device_info"]
-            )
+            assert metadata.get("device_info") == request_data["metadata"]["device_info"]
             assert metadata.get("location") == request_data["metadata"]["location"]
 
     def test_process_image_invalid_model(self, client):
@@ -176,7 +178,6 @@ class TestIAEndpoints:
         response_json = response.json()
         assert "detail" in response_json
 
-    
     def test_process_image_error_handling(self, client):
         request_data = {
             "image_url": "https://banana-analysis-bucket.s3.amazonaws.com/banana_ripeness_batch_damaged.jpg",
@@ -188,26 +189,29 @@ class TestIAEndpoints:
             },
         }
 
-        with patch(
-            "src.modules.ia_integration.usecase.detect_usecase.DetectUseCase.execute",
-            new_callable=AsyncMock,
-        ) as mock_detect, patch(
-            "src.modules.ia_integration.usecase.detect_usecase.IARepository",
-            new_callable=MagicMock,
-        ), patch(
-            "src.modules.ia_integration.usecase.detect_usecase.DynamoRepository",
-            new_callable=MagicMock,
-        ), patch(
-            "src.modules.ia_integration.repo.ia_repository.EC2Client",
-            new_callable=MagicMock,
-        ), patch(
-            "src.modules.storage.repo.dynamo_repository.DynamoClient",
-            new_callable=MagicMock,
+        with (
+            patch(
+                "src.modules.ia_integration.usecase.detect_usecase.DetectUseCase.execute",
+                new_callable=AsyncMock,
+            ) as mock_detect,
+            patch(
+                "src.modules.ia_integration.usecase.detect_usecase.IARepository",
+                new_callable=MagicMock,
+            ),
+            patch(
+                "src.modules.ia_integration.usecase.detect_usecase.DynamoRepository",
+                new_callable=MagicMock,
+            ),
+            patch(
+                "src.modules.ia_integration.repo.ia_repository.EC2Client",
+                new_callable=MagicMock,
+            ),
+            patch(
+                "src.modules.storage.repo.dynamo_repository.DynamoClient",
+                new_callable=MagicMock,
+            ),
         ):
-
-            mock_detect.side_effect = Exception(
-                "Erro na análise de maturação da imagem"
-            )
+            mock_detect.side_effect = Exception("Erro na análise de maturação da imagem")
             response = client.post("/ia/process", json=request_data)
 
             assert response.status_code == 500

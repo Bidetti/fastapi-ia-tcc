@@ -1,6 +1,7 @@
-import pytest
-from unittest.mock import AsyncMock, patch, MagicMock
+from unittest.mock import AsyncMock, MagicMock, patch
+
 import aiohttp
+import pytest
 
 from src.shared.infra.external.ec2.ec2_client import EC2Client
 
@@ -25,9 +26,7 @@ class TestEC2Client:
             "image_result_url": "https://fruit-analysis-bucket.s3.amazonaws.com/results/banana_detection_result.jpg",
         }
 
-        with patch.object(
-            EC2Client, "_make_request", new_callable=AsyncMock
-        ) as mock_make_request:
+        with patch.object(EC2Client, "_make_request", new_callable=AsyncMock) as mock_make_request:
             mock_make_request.return_value = mock_response
 
             ec2_client = EC2Client(base_url="http://banana-analysis-api.com")
@@ -35,9 +34,7 @@ class TestEC2Client:
 
             assert result == mock_response
             expected_payload = {"image_url": image_url, "metadata": metadata}
-            mock_make_request.assert_called_once_with(
-                "http://banana-analysis-api.com/detect", expected_payload
-            )
+            mock_make_request.assert_called_once_with("http://banana-analysis-api.com/detect", expected_payload)
 
     @pytest.mark.asyncio
     async def test_analyze_maturation_success(self):
@@ -63,9 +60,7 @@ class TestEC2Client:
             "image_result_url": "https://fruit-analysis-bucket.s3.amazonaws.com/results/banana_maturation_result.jpg",
         }
 
-        with patch.object(
-            EC2Client, "_make_request", new_callable=AsyncMock
-        ) as mock_make_request:
+        with patch.object(EC2Client, "_make_request", new_callable=AsyncMock) as mock_make_request:
             mock_make_request.return_value = mock_response
 
             ec2_client = EC2Client(base_url="http://banana-analysis-api.com")
@@ -73,16 +68,12 @@ class TestEC2Client:
 
             assert result == mock_response
             expected_payload = {"image_url": image_url, "metadata": metadata}
-            mock_make_request.assert_called_once_with(
-                "http://banana-analysis-api.com/maturation", expected_payload
-            )
+            mock_make_request.assert_called_once_with("http://banana-analysis-api.com/maturation", expected_payload)
 
     @pytest.mark.asyncio
     async def test_make_request_success(self):
         url = "http://banana-analysis-api.com/detect"
-        payload = {
-            "image_url": "https://fruit-analysis-bucket.s3.amazonaws.com/banana_ripeness_check.jpg"
-        }
+        payload = {"image_url": "https://fruit-analysis-bucket.s3.amazonaws.com/banana_ripeness_check.jpg"}
         mock_response = {"status": "success"}
 
         mock_response_obj = MagicMock()
@@ -105,16 +96,12 @@ class TestEC2Client:
             result = await ec2_client._make_request(url, payload)
 
             assert result == mock_response
-            mock_session.post.assert_called_once_with(
-                url, json=payload, timeout=ec2_client.timeout
-            )
+            mock_session.post.assert_called_once_with(url, json=payload, timeout=ec2_client.timeout)
 
     @pytest.mark.asyncio
     async def test_make_request_http_error(self):
         url = "http://banana-analysis-api.com/detect"
-        payload = {
-            "image_url": "https://fruit-analysis-bucket.s3.amazonaws.com/banana_maturation_batch56.jpg"
-        }
+        payload = {"image_url": "https://fruit-analysis-bucket.s3.amazonaws.com/banana_maturation_batch56.jpg"}
         error_text = "Análise de maturação não disponível"
 
         mock_response_obj = MagicMock()
@@ -138,22 +125,16 @@ class TestEC2Client:
 
             assert result["status"] == "error"
             assert f"Erro 404: {error_text}" in result["error_message"]
-            mock_session.post.assert_called_once_with(
-                url, json=payload, timeout=ec2_client.timeout
-            )
+            mock_session.post.assert_called_once_with(url, json=payload, timeout=ec2_client.timeout)
 
     @pytest.mark.asyncio
     async def test_make_request_connection_error(self):
         url = "http://banana-analysis-api.com/detect"
-        payload = {
-            "image_url": "https://fruit-analysis-bucket.s3.amazonaws.com/banana_ripeness_timeline.jpg"
-        }
+        payload = {"image_url": "https://fruit-analysis-bucket.s3.amazonaws.com/banana_ripeness_timeline.jpg"}
 
         mock_session = MagicMock()
         mock_session.__aenter__ = AsyncMock(
-            side_effect=aiohttp.ClientError(
-                "Erro ao conectar ao serviço de análise de maturação"
-            )
+            side_effect=aiohttp.ClientError("Erro ao conectar ao serviço de análise de maturação")
         )
 
         with patch("aiohttp.ClientSession", return_value=mock_session):
