@@ -1,9 +1,9 @@
 from typing import Dict, List, Optional, Any
-from datetime import datetime
+from datetime import datetime, timezone
 from uuid import uuid4
 
-from .result import ProcessingResult, DetectionResult
-from ..enums.ia_model_type_enum import ModelType
+from src.shared.domain.entities.result import ProcessingResult, DetectionResult
+from src.shared.domain.enums.ia_model_type_enum import ModelType
 
 class CombinedResult:
     """Classe que representa um resultado combinado de detecção e maturação."""
@@ -25,9 +25,9 @@ class CombinedResult:
         self.detection_result = detection_result
         self.maturation_result = maturation_result
         self.location = location
-        self.processing_timestamp = processing_timestamp or datetime.utcnow()
-        self.created_at = created_at or datetime.utcnow()
-        self.updated_at = updated_at or datetime.utcnow()
+        self.processing_timestamp = processing_timestamp or datetime.now(timezone.utc)
+        self.created_at = created_at or datetime.now(timezone.utc)
+        self.updated_at = updated_at or datetime.now(timezone.utc)
         self.combined_id = combined_id or f"combined-{uuid4()}"
         
         if maturation_result and maturation_result.status == "success":
@@ -96,4 +96,72 @@ class CombinedResult:
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> "CombinedResult":
         """Cria uma instância a partir de um dicionário."""
-        pass
+        processing_timestamp = None
+        if data.get("processing_timestamp"):
+            processing_timestamp = datetime.fromisoformat(data["processing_timestamp"])
+        
+        created_at = None
+        if data.get("created_at"):
+            created_at = datetime.fromisoformat(data["created_at"])
+            
+        updated_at = None
+        if data.get("updated_at"):
+            updated_at = datetime.fromisoformat(data["updated_at"])
+        
+        detection_data = data.get("detection", {})
+        detection_result = None
+        if detection_data:
+            detection_timestamp = None
+            if detection_data.get("processing_timestamp"):
+                detection_timestamp = datetime.fromisoformat(detection_data["processing_timestamp"])
+            
+            detection_results = []
+            for result_data in detection_data.get("results", []):
+                detection_result_obj = DetectionResult.from_dict(result_data)
+                detection_results.append(detection_result_obj)
+            
+            detection_result = ProcessingResult(
+                image_id=data["image_id"],
+                model_type=ModelType.DETECTION,
+                results=detection_results,
+                status=detection_data.get("status", "error"),
+                request_id=detection_data.get("request_id"),
+                processing_timestamp=detection_timestamp,
+                summary=detection_data.get("summary", {}),
+                image_result_url=detection_data.get("image_result_url")
+            )
+        
+        maturation_data = data.get("maturation")
+        maturation_result = None
+        if maturation_data:
+            maturation_timestamp = None
+            if maturation_data.get("processing_timestamp"):
+                maturation_timestamp = datetime.fromisoformat(maturation_data["processing_timestamp"])
+            
+            maturation_results = []
+            for result_data in maturation_data.get("results", []):
+                maturation_result_obj = DetectionResult.from_dict(result_data)
+                maturation_results.append(maturation_result_obj)
+            
+            maturation_result = ProcessingResult(
+                image_id=data["image_id"],
+                model_type=ModelType.MATURATION,
+                results=maturation_results,
+                status=maturation_data.get("status", "error"),
+                request_id=maturation_data.get("request_id"),
+                processing_timestamp=maturation_timestamp,
+                summary=maturation_data.get("summary", {}),
+                image_result_url=maturation_data.get("image_result_url")
+            )
+        
+        return cls(
+            image_id=data["image_id"],
+            user_id=data["user_id"],
+            detection_result=detection_result,
+            maturation_result=maturation_result,
+            location=data.get("location"),
+            processing_timestamp=processing_timestamp,
+            created_at=created_at,
+            updated_at=updated_at,
+            combined_id=data.get("combined_id")
+        )

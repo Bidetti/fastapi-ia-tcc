@@ -1,11 +1,11 @@
 from typing import Dict, Any, Optional, List
 import logging
 
-from shared.infra.repo.ia_repository_interface import IARepositoryInterface
-from shared.infra.external.ec2.ec2_client import EC2Client
-from shared.domain.entities.image import Image
-from shared.domain.entities.result import ProcessingResult, DetectionResult
-from shared.domain.enums.ia_model_type_enum import ModelType
+from src.shared.infra.repo.ia_repository_interface import IARepositoryInterface
+from src.shared.infra.external.ec2.ec2_client import EC2Client
+from src.shared.domain.entities.image import Image
+from src.shared.domain.entities.result import ProcessingResult, DetectionResult
+from src.shared.domain.enums.ia_model_type_enum import ModelType
 
 logger = logging.getLogger(__name__)
 
@@ -48,7 +48,7 @@ class IARepository(IARepositoryInterface):
             detection_results = []
             for result in response.get("results", []):
                 detection_results.append(DetectionResult(
-                    class_name=result["class"],
+                    class_name=result["class_name"],
                     confidence=result["confidence"],
                     bounding_box=result["bounding_box"],
                     maturation_level=None  # A detecção não inclui dados de maturação
@@ -103,7 +103,7 @@ class IARepository(IARepositoryInterface):
             detection_results = []
             for result in response.get("results", []):
                 detection_results.append(DetectionResult(
-                    class_name=result["class"],
+                    class_name=result["class_name"],
                     confidence=result["confidence"],
                     bounding_box=result["bounding_box"],
                     maturation_level=result.get("maturation_level")
@@ -160,7 +160,7 @@ class IARepository(IARepositoryInterface):
             detection_results = []
             for result in response.get("results", []):
                 detection_results.append(DetectionResult(
-                    class_name=result["class"],
+                    class_name=result["class_name"],
                     confidence=result["confidence"],
                     bounding_box=result["bounding_box"],
                     maturation_level=result.get("maturation_level")

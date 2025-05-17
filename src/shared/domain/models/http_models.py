@@ -1,15 +1,15 @@
 from typing import Dict, List, Optional, Any
 from pydantic import BaseModel, HttpUrl, Field
-from datetime import datetime
+from datetime import datetime, timezone
 from uuid import UUID
 
-from ..enums.ia_model_type_enum import ModelType
+from src.shared.domain.enums.ia_model_type_enum import ModelType
 
 
 class ImageMetadata(BaseModel):
     """Metadados da imagem enviada pelo cliente."""
     device_info: Optional[str] = None
-    timestamp: Optional[datetime] = Field(default_factory=datetime.utcnow)
+    timestamp: Optional[datetime] = Field(default_factory=lambda: datetime.now(timezone.utc))
     location: Optional[str] = None
 
 
@@ -43,7 +43,7 @@ class MaturationInfo(BaseModel):
 
 class DetectionInfo(BaseModel):
     """Informação sobre um objeto detectado."""
-    class_name: str = Field(alias="class")
+    class_name: str
     confidence: float
     bounding_box: List[float]
     maturation_level: Optional[MaturationInfo] = None

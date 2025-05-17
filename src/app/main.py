@@ -3,9 +3,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 import logging
 
-from .config import settings
-from ..modules.ia_integration.controller.ia_controller import ia_router
-from ..modules.storage.controller.storage_controller import storage_router
+from src.app.config import settings
+from src.modules.ia_integration.controller.ia_controller import ia_router
+from src.modules.storage.controller.storage_controller import storage_router
 
 logging.basicConfig(
     level=logging.INFO,

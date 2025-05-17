@@ -3,9 +3,9 @@ from datetime import timedelta
 import logging
 import uuid
 
-from ....shared.infra.repo.s3_repository_interface import S3RepositoryInterface
-from ....shared.infra.external.s3.s3_client import S3Client
-from ....app.config import settings
+from src.shared.infra.repo.s3_repository_interface import S3RepositoryInterface
+from src.shared.infra.external.s3.s3_client import S3Client
+from src.app.config import settings
 
 logger = logging.getLogger(__name__)
 

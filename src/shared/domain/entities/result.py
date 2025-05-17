@@ -1,7 +1,7 @@
 from typing import Dict, List, Optional, Any, Union
-from datetime import datetime
+from datetime import datetime, timezone
 from uuid import uuid4
-from ..enums.ia_model_type_enum import ModelType
+from src.shared.domain.enums.ia_model_type_enum import ModelType
 
 
 class DetectionResult:
@@ -22,7 +22,7 @@ class DetectionResult:
     def to_dict(self) -> Dict[str, Any]:
         """Converte a entidade para dicionário."""
         return {
-            "class": self.class_name,
+            "class_name": self.class_name,
             "confidence": self.confidence,
             "bounding_box": self.bounding_box,
             "maturation_level": self.maturation_level
@@ -32,7 +32,7 @@ class DetectionResult:
     def from_dict(cls, data: Dict[str, Any]) -> "DetectionResult":
         """Cria uma instância a partir de um dicionário."""
         return cls(
-            class_name=data["class"],
+            class_name=data["class_name"],
             confidence=data["confidence"],
             bounding_box=data["bounding_box"],
             maturation_level=data.get("maturation_level")
@@ -59,7 +59,7 @@ class ProcessingResult:
         self.model_type = model_type
         self.results = results
         self.status = status
-        self.processing_timestamp = processing_timestamp or datetime.utcnow()
+        self.processing_timestamp = processing_timestamp or datetime.now(timezone.utc)
         self.summary = summary or {}
         self.image_result_url = image_result_url
         self.error_message = error_message
