@@ -4,6 +4,33 @@ from typing import List, Optional
 from pydantic import BaseModel, Field, HttpUrl
 
 from src.shared.domain.enums.ia_model_type_enum import ModelType
+from src.shared.domain.models.monitoring_models import (
+    CaptureResultResponse,
+    CaptureUpdateRequest,
+    MonitoringMetadata,
+    MonitoringSessionRequest,
+    MonitoringSessionResponse,
+    WebSocketConfigRequest,
+)
+
+__all__ = [
+    "ImageMetadata",
+    "ProcessImageRequest",
+    "BoundingBox",
+    "MaturationInfo",
+    "DetectionInfo",
+    "ProcessingSummary",
+    "ProcessingResponse",
+    "PresignedUrlRequest",
+    "PresignedUrlResponse",
+    "ProcessingStatusResponse",
+    "MonitoringSessionRequest",
+    "MonitoringSessionResponse",
+    "CaptureResultResponse",
+    "CaptureUpdateRequest",
+    "WebSocketConfigRequest",
+    "MonitoringMetadata",
+]
 
 
 class ImageMetadata(BaseModel):

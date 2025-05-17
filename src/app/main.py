@@ -6,6 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from src.app.config import settings
 from src.modules.ia_integration.controller.ia_controller import ia_router
+from src.modules.monitoring.controller.monitoring_controller import monitoring_router
 from src.modules.storage.controller.storage_controller import storage_router
 
 logging.basicConfig(
@@ -41,11 +42,11 @@ app.add_middleware(
 
 app.include_router(ia_router)
 app.include_router(storage_router)
+app.include_router(monitoring_router)
 
 
 @app.get("/health-check", tags=["Health"])
 async def health_check():
-    """Endpoint para verificar a saúde da API."""
     return {
         "status": "healthy",
         "environment": settings.ENVIRONMENT,
@@ -55,7 +56,6 @@ async def health_check():
 
 @app.get("/", tags=["Root"])
 async def root():
-    """Endpoint raiz para teste."""
     return {
         "message": "API de IA para Detecção e Maturação de Frutas",
         "docs": "/docs",
