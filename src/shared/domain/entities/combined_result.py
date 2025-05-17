@@ -116,7 +116,7 @@ class CombinedResult:
                 detection_timestamp = datetime.fromisoformat(detection_data["processing_timestamp"])
             
             detection_results = []
-            for result_data in data.get("results", []):
+            for result_data in detection_data.get("results", []):
                 detection_result_obj = DetectionResult.from_dict(result_data)
                 detection_results.append(detection_result_obj)
             
@@ -139,7 +139,7 @@ class CombinedResult:
                 maturation_timestamp = datetime.fromisoformat(maturation_data["processing_timestamp"])
             
             maturation_results = []
-            for result_data in data.get("results", []):
+            for result_data in maturation_data.get("results", []):
                 maturation_result_obj = DetectionResult.from_dict(result_data)
                 maturation_results.append(maturation_result_obj)
             
