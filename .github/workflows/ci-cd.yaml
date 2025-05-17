@@ -40,7 +40,7 @@ jobs:
           pytest
 
       - name: Verificar cobertura de testes (somente para main)
-        if: github.event_name == 'pull_request' && github.base_ref == 'main' || github.ref == 'refs/heads/main'
+        if: (github.event_name == 'pull_request' && github.base_ref == 'main') || (github.ref == 'refs/heads/main')
         run: |
           pytest --cov=src tests/ --cov-report=term --cov-fail-under=80
 
