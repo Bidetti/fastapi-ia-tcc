@@ -38,7 +38,6 @@ class TestIAEndpoints:
             "src.modules.storage.repo.dynamo_repository.DynamoClient",
             new_callable=MagicMock,
         ):
-
             detection_result = DetectionResult(
                 class_name="banana", confidence=0.95, bounding_box=[0.1, 0.1, 0.2, 0.2]
             )
@@ -110,7 +109,6 @@ class TestIAEndpoints:
             "src.modules.storage.repo.dynamo_repository.DynamoClient",
             new_callable=MagicMock,
         ):
-
             detection_result = DetectionResult(
                 class_name="banana",
                 confidence=0.95,
@@ -176,7 +174,6 @@ class TestIAEndpoints:
         response_json = response.json()
         assert "detail" in response_json
 
-    
     def test_process_image_error_handling(self, client):
         request_data = {
             "image_url": "https://banana-analysis-bucket.s3.amazonaws.com/banana_ripeness_batch_damaged.jpg",
@@ -204,7 +201,6 @@ class TestIAEndpoints:
             "src.modules.storage.repo.dynamo_repository.DynamoClient",
             new_callable=MagicMock,
         ):
-
             mock_detect.side_effect = Exception(
                 "Erro na análise de maturação da imagem"
             )
