@@ -20,8 +20,8 @@ from src.shared.domain.enums.ia_model_type_enum import ModelType
 
 @pytest.fixture
 def client():
-    with TestClient(app) as client:
-        yield client
+    with TestClient(app) as test_client:
+        yield test_client
 
 @pytest.fixture
 def mock_s3_client():
