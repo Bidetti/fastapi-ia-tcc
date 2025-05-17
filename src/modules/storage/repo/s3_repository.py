@@ -1,11 +1,11 @@
-from typing import Dict, Optional, Any, BinaryIO
-from datetime import timedelta
 import logging
 import uuid
+from datetime import timedelta
+from typing import Any, BinaryIO, Dict, Optional
 
-from src.shared.infra.repo.s3_repository_interface import S3RepositoryInterface
-from src.shared.infra.external.s3.s3_client import S3Client
 from src.app.config import settings
+from src.shared.infra.external.s3.s3_client import S3Client
+from src.shared.infra.repo.s3_repository_interface import S3RepositoryInterface
 
 logger = logging.getLogger(__name__)
 
@@ -34,9 +34,7 @@ class S3Repository(S3RepositoryInterface):
         self.images_client = S3Client(bucket_name=images_bucket, region=self.region)
         self.results_client = S3Client(bucket_name=results_bucket, region=self.region)
 
-        logger.info(
-            f"Inicializando repositório S3 com buckets: {images_bucket} e {results_bucket}"
-        )
+        logger.info(f"Inicializando repositório S3 com buckets: {images_bucket} e {results_bucket}")
 
     async def generate_presigned_url(
         self, key: str, content_type: str, expires_in: timedelta = timedelta(minutes=15)
@@ -53,9 +51,7 @@ class S3Repository(S3RepositoryInterface):
             Dict: Dados da URL pré-assinada
         """
         logger.info(f"Gerando URL pré-assinada para upload de imagem: {key}")
-        return await self.images_client.generate_presigned_url(
-            key, content_type, expires_in
-        )
+        return await self.images_client.generate_presigned_url(key, content_type, expires_in)
 
     async def generate_image_key(self, original_filename: str, user_id: str) -> str:
         """
@@ -100,9 +96,7 @@ class S3Repository(S3RepositoryInterface):
             str: URL do arquivo no S3
         """
         logger.info(f"Fazendo upload de arquivo para o S3: {key}")
-        return await self.images_client.upload_file(
-            file_obj, key, content_type, metadata
-        )
+        return await self.images_client.upload_file(file_obj, key, content_type, metadata)
 
     async def upload_result_image(
         self,
@@ -128,9 +122,7 @@ class S3Repository(S3RepositoryInterface):
         result_key = original_key.replace(".jpg", f"_{result_type}.jpg")
 
         logger.info(f"Fazendo upload de imagem de resultado para o S3: {result_key}")
-        return await self.results_client.upload_file(
-            file_obj, result_key, content_type, metadata
-        )
+        return await self.results_client.upload_file(file_obj, result_key, content_type, metadata)
 
     async def get_file_url(self, key: str) -> str:
         """

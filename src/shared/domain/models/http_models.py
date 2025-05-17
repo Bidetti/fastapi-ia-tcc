@@ -1,7 +1,7 @@
-from typing import Dict, List, Optional, Any
-from pydantic import BaseModel, HttpUrl, Field
 from datetime import datetime, timezone
-from uuid import UUID
+from typing import List, Optional
+
+from pydantic import BaseModel, Field, HttpUrl
 
 from src.shared.domain.enums.ia_model_type_enum import ModelType
 
@@ -10,9 +10,7 @@ class ImageMetadata(BaseModel):
     """Metadados da imagem enviada pelo cliente."""
 
     device_info: Optional[str] = None
-    timestamp: Optional[datetime] = Field(
-        default_factory=lambda: datetime.now(timezone.utc)
-    )
+    timestamp: Optional[datetime] = Field(default_factory=lambda: datetime.now(timezone.utc))
     location: Optional[str] = None
 
 

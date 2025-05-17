@@ -1,9 +1,11 @@
-import boto3
-from botocore.exceptions import ClientError
-from typing import Dict, Optional, Any, BinaryIO
-from datetime import timedelta
 import logging
 import mimetypes
+from datetime import timedelta
+from typing import Any, BinaryIO, Dict, Optional
+
+import boto3
+from botocore.exceptions import ClientError
+
 from src.app.config import settings
 
 logger = logging.getLogger(__name__)
@@ -84,9 +86,7 @@ class S3Client:
             if metadata:
                 extra_args["Metadata"] = metadata
 
-            self.client.upload_fileobj(
-                file_obj, self.bucket_name, key, ExtraArgs=extra_args
-            )
+            self.client.upload_fileobj(file_obj, self.bucket_name, key, ExtraArgs=extra_args)
 
             return self.get_file_url(key)
         except ClientError as e:

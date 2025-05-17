@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Dict, List, Optional, Any
+from typing import Any, Dict, List, Optional
 
 from ...domain.entities.image import Image
 from ...domain.entities.result import ProcessingResult
@@ -48,9 +48,7 @@ class DynamoRepositoryInterface(ABC):
         pass
 
     @abstractmethod
-    async def get_result_by_request_id(
-        self, request_id: str
-    ) -> Optional[ProcessingResult]:
+    async def get_result_by_request_id(self, request_id: str) -> Optional[ProcessingResult]:
         """
         Recupera um resultado de processamento pelo ID da requisição.
 
@@ -76,9 +74,7 @@ class DynamoRepositoryInterface(ABC):
         pass
 
     @abstractmethod
-    async def get_results_by_user_id(
-        self, user_id: str, limit: int = 10
-    ) -> List[ProcessingResult]:
+    async def get_results_by_user_id(self, user_id: str, limit: int = 10) -> List[ProcessingResult]:
         """
         Recupera os resultados de processamento para um usuário.
 

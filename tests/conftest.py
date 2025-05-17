@@ -1,22 +1,21 @@
-from dotenv import load_dotenv
-import pytest
+import json
 import os
 import sys
-from unittest.mock import AsyncMock, MagicMock, patch
-from fastapi.testclient import TestClient
 from datetime import datetime
-import uuid
-import json
-from typing import Dict, List, Any, Optional
+from unittest.mock import AsyncMock, MagicMock, patch
+
+import pytest
+from dotenv import load_dotenv
+from fastapi.testclient import TestClient
+
+from src.app.main import app
+from src.shared.domain.entities.image import Image
+from src.shared.domain.entities.result import DetectionResult, ProcessingResult
+from src.shared.domain.enums.ia_model_type_enum import ModelType
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 load_dotenv(".env.test")
-
-from src.app.main import app
-from src.shared.domain.entities.image import Image
-from src.shared.domain.entities.result import ProcessingResult, DetectionResult
-from src.shared.domain.enums.ia_model_type_enum import ModelType
 
 
 @pytest.fixture
@@ -40,14 +39,10 @@ def mock_s3_client():
         )
 
         # Mock para upload_file
-        s3_client_instance.upload_file = AsyncMock(
-            return_value="https://test-bucket.s3.amazonaws.com/test-key"
-        )
+        s3_client_instance.upload_file = AsyncMock(return_value="https://test-bucket.s3.amazonaws.com/test-key")
 
         # Mock para get_file_url
-        s3_client_instance.get_file_url = AsyncMock(
-            return_value="https://test-bucket.s3.amazonaws.com/test-key"
-        )
+        s3_client_instance.get_file_url = AsyncMock(return_value="https://test-bucket.s3.amazonaws.com/test-key")
 
         # Mock para delete_file
         s3_client_instance.delete_file = AsyncMock(return_value=True)
@@ -61,9 +56,7 @@ def mock_dynamo_client():
         dynamo_client_instance = mock.return_value
 
         # Mock para put_item
-        dynamo_client_instance.put_item = AsyncMock(
-            return_value={"pk": "IMG#test-id", "sk": "META#test-id"}
-        )
+        dynamo_client_instance.put_item = AsyncMock(return_value={"pk": "IMG#test-id", "sk": "META#test-id"})
 
         # Mock para get_item
         dynamo_client_instance.get_item = AsyncMock(
@@ -167,9 +160,7 @@ def sample_image():
 
 @pytest.fixture
 def sample_detection_result():
-    detection_result = DetectionResult(
-        class_name="apple", confidence=0.95, bounding_box=[0.1, 0.1, 0.2, 0.2]
-    )
+    detection_result = DetectionResult(class_name="apple", confidence=0.95, bounding_box=[0.1, 0.1, 0.2, 0.2])
 
     return ProcessingResult(
         image_id="test-image-id",
@@ -233,14 +224,10 @@ def mock_s3_repository():
         )
 
         # Mock para generate_image_key
-        s3_repo_instance.generate_image_key = AsyncMock(
-            return_value="test-user/2025/05/12/test-uuid.jpg"
-        )
+        s3_repo_instance.generate_image_key = AsyncMock(return_value="test-user/2025/05/12/test-uuid.jpg")
 
         # Mock para upload_file
-        s3_repo_instance.upload_file = AsyncMock(
-            return_value="https://test-bucket.s3.amazonaws.com/test-key"
-        )
+        s3_repo_instance.upload_file = AsyncMock(return_value="https://test-bucket.s3.amazonaws.com/test-key")
 
         # Mock para upload_result_image
         s3_repo_instance.upload_result_image = AsyncMock(
@@ -248,9 +235,7 @@ def mock_s3_repository():
         )
 
         # Mock para get_file_url
-        s3_repo_instance.get_file_url = AsyncMock(
-            return_value="https://test-bucket.s3.amazonaws.com/test-key"
-        )
+        s3_repo_instance.get_file_url = AsyncMock(return_value="https://test-bucket.s3.amazonaws.com/test-key")
 
         # Mock para get_result_url
         s3_repo_instance.get_result_url = AsyncMock(
@@ -305,11 +290,11 @@ def mock_dynamo_repository():
 
         # Mock para get_result_by_request_id
         dynamo_repo_instance.get_result_by_request_id = AsyncMock(
-            side_effect=lambda request_id: create_sample_detection_result()
-            if request_id == "test-request-id"
-            else create_sample_maturation_result()
-            if request_id == "test-maturation-id"
-            else None
+            side_effect=lambda request_id: (
+                create_sample_detection_result()
+                if request_id == "test-request-id"
+                else create_sample_maturation_result() if request_id == "test-maturation-id" else None
+            )
         )
 
         # Mock para get_results_by_image_id
@@ -383,10 +368,7 @@ def mock_ia_repository():
 
 
 def create_sample_detection_result():
-    """Helper function that creates a sample detection result without using the fixture"""
-    detection_result = DetectionResult(
-        class_name="apple", confidence=0.95, bounding_box=[0.1, 0.1, 0.2, 0.2]
-    )
+    detection_result = DetectionResult(class_name="apple", confidence=0.95, bounding_box=[0.1, 0.1, 0.2, 0.2])
 
     return ProcessingResult(
         image_id="test-image-id",
@@ -400,7 +382,6 @@ def create_sample_detection_result():
 
 
 def create_sample_maturation_result():
-    """Helper function that creates a sample maturation result without using the fixture"""
     detection_result = DetectionResult(
         class_name="apple",
         confidence=0.95,

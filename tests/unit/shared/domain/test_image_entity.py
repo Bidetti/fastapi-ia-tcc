@@ -1,4 +1,3 @@
-import pytest
 from datetime import datetime
 
 from src.shared.domain.entities.image import Image

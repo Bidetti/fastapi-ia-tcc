@@ -1,47 +1,27 @@
-from typing import Dict, Any, Optional
 import logging
+from typing import Any, Dict, Optional
 
+from src.modules.ia_integration.repo.ia_repository import IARepository
+from src.modules.storage.repo.dynamo_repository import DynamoRepository
 from src.shared.domain.entities.image import Image
 from src.shared.domain.entities.result import ProcessingResult
 from src.shared.domain.enums.ia_model_type_enum import ModelType
-from src.modules.ia_integration.repo.ia_repository import IARepository
-from src.modules.storage.repo.dynamo_repository import DynamoRepository
 
 logger = logging.getLogger(__name__)
 
 
 class DetectUseCase:
-    """Caso de uso para detecção de objetos."""
-
     def __init__(
         self,
         ia_repository: Optional[IARepository] = None,
         dynamo_repository: Optional[DynamoRepository] = None,
     ):
-        """
-        Inicializa o caso de uso de detecção.
-
-        Args:
-            ia_repository: Repositório de IA opcional. Se não fornecido, um novo será criado.
-            dynamo_repository: Repositório DynamoDB opcional. Se não fornecido, um novo será criado.
-        """
         self.ia_repository = ia_repository or IARepository()
         self.dynamo_repository = dynamo_repository or DynamoRepository()
 
     async def execute(
         self, image_url: str, user_id: str, metadata: Optional[Dict[str, Any]] = None
     ) -> ProcessingResult:
-        """
-        Executa a detecção de objetos em uma imagem.
-
-        Args:
-            image_url: URL da imagem no S3
-            user_id: ID do usuário
-            metadata: Metadados adicionais para o processamento
-
-        Returns:
-            ProcessingResult: Resultado do processamento com detecções
-        """
         try:
             logger.info(f"Iniciando detecção de objetos para imagem: {image_url}")
             image = Image(image_url=image_url, user_id=user_id, metadata=metadata)

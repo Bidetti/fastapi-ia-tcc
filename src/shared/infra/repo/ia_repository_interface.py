@@ -1,9 +1,7 @@
 from abc import ABC, abstractmethod
-from typing import Dict, Any, Optional
 
 from ...domain.entities.image import Image
 from ...domain.entities.result import ProcessingResult
-from ...domain.enums.ia_model_type_enum import ModelType
 
 
 class IARepositoryInterface(ABC):

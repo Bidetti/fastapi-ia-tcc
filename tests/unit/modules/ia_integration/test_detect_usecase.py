@@ -1,11 +1,9 @@
+from unittest.mock import AsyncMock
+
 import pytest
-from unittest.mock import AsyncMock, patch, MagicMock
 
 from src.modules.ia_integration.usecase.detect_usecase import DetectUseCase
-from src.modules.ia_integration.repo.ia_repository import IARepository
-from src.modules.storage.repo.dynamo_repository import DynamoRepository
 from src.shared.domain.entities.image import Image
-from src.shared.domain.entities.result import ProcessingResult
 from src.shared.domain.enums.ia_model_type_enum import ModelType
 
 
@@ -16,9 +14,7 @@ class TestDetectUseCase:
         user_id = "banana_farm_inspector"
         metadata = {"original_filename": "banana_plantation_batch42.jpg"}
 
-        detect_usecase = DetectUseCase(
-            ia_repository=mock_ia_repository, dynamo_repository=mock_dynamo_repository
-        )
+        detect_usecase = DetectUseCase(ia_repository=mock_ia_repository, dynamo_repository=mock_dynamo_repository)
         result = await detect_usecase.execute(image_url, user_id, metadata)
 
         assert result.model_type == ModelType.DETECTION
@@ -26,10 +22,7 @@ class TestDetectUseCase:
         assert len(result.results) == 1
         assert result.results[0].class_name == "banana"
         assert result.results[0].confidence == 0.95
-        assert (
-            result.image_result_url
-            == "https://fruit-analysis.com/results/banana_detection_result.jpg"
-        )
+        assert result.image_result_url == "https://fruit-analysis.com/results/banana_detection_result.jpg"
 
         mock_dynamo_repository.save_image_metadata.assert_called_once()
         mock_ia_repository.detect_objects.assert_called_once()
@@ -42,9 +35,7 @@ class TestDetectUseCase:
         metadata = {"original_filename": "banana_maturacao_lote35.jpg"}
 
         mock_failing_ia_repository = AsyncMock()
-        mock_failing_ia_repository.detect_objects = AsyncMock(
-            side_effect=Exception("Falha na detecção de maturação")
-        )
+        mock_failing_ia_repository.detect_objects = AsyncMock(side_effect=Exception("Falha na detecção de maturação"))
 
         detect_usecase = DetectUseCase(
             ia_repository=mock_failing_ia_repository,
@@ -62,15 +53,11 @@ class TestDetectUseCase:
         mock_dynamo_repository.save_processing_result.assert_not_called()
 
     @pytest.mark.asyncio
-    async def test_execute_empty_metadata(
-        self, mock_ia_repository, mock_dynamo_repository
-    ):
+    async def test_execute_empty_metadata(self, mock_ia_repository, mock_dynamo_repository):
         image_url = "https://fruit-analysis.com/banana_shipment_inspection.jpg"
         user_id = "distribution_center_analyst"
 
-        detect_usecase = DetectUseCase(
-            ia_repository=mock_ia_repository, dynamo_repository=mock_dynamo_repository
-        )
+        detect_usecase = DetectUseCase(ia_repository=mock_ia_repository, dynamo_repository=mock_dynamo_repository)
         result = await detect_usecase.execute(image_url, user_id)
 
         assert result.model_type == ModelType.DETECTION
@@ -88,9 +75,7 @@ class TestDetectUseCase:
         user_id = "banana_ripeness_researcher"
 
         mock_failing_dynamo_repository = AsyncMock()
-        mock_failing_dynamo_repository.save_image_metadata = AsyncMock(
-            side_effect=Exception("Erro de acesso ao banco")
-        )
+        mock_failing_dynamo_repository.save_image_metadata = AsyncMock(side_effect=Exception("Erro de acesso ao banco"))
 
         detect_usecase = DetectUseCase(
             ia_repository=mock_ia_repository,

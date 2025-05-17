@@ -1,14 +1,9 @@
-from fastapi import APIRouter, Depends, HTTPException, Query
-from typing import Optional, List
+from fastapi import APIRouter, Depends, HTTPException
 
-from src.shared.domain.models.http_models import (
-    ProcessImageRequest,
-    ProcessingResponse,
-    ProcessingStatusResponse,
-)
-from src.shared.domain.enums.ia_model_type_enum import ModelType
 from src.modules.ia_integration.usecase.detect_usecase import DetectUseCase
 from src.modules.ia_integration.usecase.maturation_usecase import MaturationUseCase
+from src.shared.domain.enums.ia_model_type_enum import ModelType
+from src.shared.domain.models.http_models import ProcessImageRequest, ProcessingResponse
 
 ia_router = APIRouter(prefix="/ia", tags=["IA"])
 
@@ -34,9 +29,7 @@ async def process_image(
             try:
                 metadata = request.metadata.model_dump()
             except Exception as e:
-                raise HTTPException(
-                    status_code=400, detail=f"Erro ao processar metadados: {str(e)}"
-                )
+                raise HTTPException(status_code=400, detail=f"Erro ao processar metadados: {str(e)}")
 
         if request.model_type == ModelType.DETECTION:
             result = await detect_usecase.execute(
@@ -51,14 +44,10 @@ async def process_image(
                 metadata=metadata,
             )
         else:
-            raise HTTPException(
-                status_code=400, detail=f"Tipo de modelo inválido: {request.model_type}"
-            )
+            raise HTTPException(status_code=400, detail=f"Tipo de modelo inválido: {request.model_type}")
 
         response_data = result.to_dict()
         return ProcessingResponse(**response_data)
 
     except Exception as e:
-        raise HTTPException(
-            status_code=500, detail=f"Erro ao processar imagem: {str(e)}"
-        )
+        raise HTTPException(status_code=500, detail=f"Erro ao processar imagem: {str(e)}")

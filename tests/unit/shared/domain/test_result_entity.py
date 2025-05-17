@@ -1,4 +1,3 @@
-import pytest
 from datetime import datetime
 
 from src.shared.domain.entities.result import DetectionResult, ProcessingResult
@@ -11,9 +10,7 @@ class TestDetectionResultEntity:
         confidence = 0.96
         bounding_box = [0.1, 0.2, 0.3, 0.4]
 
-        detection = DetectionResult(
-            class_name=class_name, confidence=confidence, bounding_box=bounding_box
-        )
+        detection = DetectionResult(class_name=class_name, confidence=confidence, bounding_box=bounding_box)
 
         assert detection.class_name == class_name
         assert detection.confidence == confidence
@@ -89,15 +86,9 @@ class TestProcessingResultEntity:
     def test_processing_result_creation(self):
         image_id = "banana-batch-123-img"
         model_type = ModelType.DETECTION
-        results = [
-            DetectionResult(
-                class_name="banana", confidence=0.95, bounding_box=[0.1, 0.2, 0.3, 0.4]
-            )
-        ]
+        results = [DetectionResult(class_name="banana", confidence=0.95, bounding_box=[0.1, 0.2, 0.3, 0.4])]
 
-        processing_result = ProcessingResult(
-            image_id=image_id, model_type=model_type, results=results
-        )
+        processing_result = ProcessingResult(image_id=image_id, model_type=model_type, results=results)
 
         assert processing_result.image_id == image_id
         assert processing_result.model_type == model_type
@@ -128,9 +119,7 @@ class TestProcessingResultEntity:
         request_id = "banana-maturation-req-789"
         timestamp = datetime(2025, 5, 12, 10, 30, 0)
         summary = {"maturation_analysis_time_ms": 420}
-        image_result_url = (
-            "https://fruit-analysis.com/results/banana_maturation_result_789.jpg"
-        )
+        image_result_url = "https://fruit-analysis.com/results/banana_maturation_result_789.jpg"
         error_message = "Pontos de maturação não detectáveis"
 
         processing_result = ProcessingResult(
@@ -174,9 +163,7 @@ class TestProcessingResultEntity:
         request_id = "banana-maturation-analysis-321"
         timestamp = datetime(2025, 5, 12, 10, 30, 0)
         summary = {"maturation_pattern_analysis_ms": 380}
-        image_result_url = (
-            "https://fruit-analysis.com/results/banana_maturation_567.jpg"
-        )
+        image_result_url = "https://fruit-analysis.com/results/banana_maturation_567.jpg"
 
         processing_result = ProcessingResult(
             image_id=image_id,
@@ -233,9 +220,7 @@ class TestProcessingResultEntity:
         assert processing_result.results[0].maturation_level["score"] == 0.85
         assert processing_result.status == "success"
         assert processing_result.request_id == "banana-ripeness-analysis-987"
-        assert (
-            processing_result.processing_timestamp.isoformat() == "2025-05-12T10:30:00"
-        )
+        assert processing_result.processing_timestamp.isoformat() == "2025-05-12T10:30:00"
         assert processing_result.summary == {
             "maturation_points_identified": 12,
             "analysis_time_ms": 360,

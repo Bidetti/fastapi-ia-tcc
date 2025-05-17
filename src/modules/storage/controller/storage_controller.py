@@ -1,14 +1,11 @@
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form, Query
-from typing import Optional, List
 import logging
+from typing import List, Optional
 
-from src.shared.domain.models.http_models import (
-    PresignedUrlRequest,
-    PresignedUrlResponse,
-    ProcessingResponse,
-)
-from src.modules.storage.usecase.image_upload_usecase import ImageUploadUseCase
+from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, UploadFile
+
 from src.modules.storage.usecase.get_result_usecase import GetResultUseCase
+from src.modules.storage.usecase.image_upload_usecase import ImageUploadUseCase
+from src.shared.domain.models.http_models import PresignedUrlRequest, PresignedUrlResponse, ProcessingResponse
 
 logger = logging.getLogger(__name__)
 storage_router = APIRouter(prefix="/storage", tags=["Storage"])
@@ -43,9 +40,7 @@ async def generate_presigned_url(
 
     except Exception as e:
         logger.exception(f"Erro ao gerar URL pré-assinada: {e}")
-        raise HTTPException(
-            status_code=500, detail=f"Erro ao gerar URL pré-assinada: {str(e)}"
-        )
+        raise HTTPException(status_code=500, detail=f"Erro ao gerar URL pré-assinada: {str(e)}")
 
 
 @storage_router.post("/upload", response_model=dict)
@@ -85,15 +80,11 @@ async def upload_image(
 
     except Exception as e:
         logger.exception(f"Erro ao fazer upload de imagem: {e}")
-        raise HTTPException(
-            status_code=500, detail=f"Erro ao fazer upload de imagem: {str(e)}"
-        )
+        raise HTTPException(status_code=500, detail=f"Erro ao fazer upload de imagem: {str(e)}")
 
 
 @storage_router.get("/results/request/{request_id}", response_model=ProcessingResponse)
-async def get_result_by_request_id(
-    request_id: str, result_usecase: GetResultUseCase = Depends(get_result_usecase)
-):
+async def get_result_by_request_id(request_id: str, result_usecase: GetResultUseCase = Depends(get_result_usecase)):
     """Recupera um resultado de processamento pelo ID da requisição."""
     try:
         result = await result_usecase.get_by_request_id(request_id)
@@ -110,17 +101,11 @@ async def get_result_by_request_id(
         raise
     except Exception as e:
         logger.exception(f"Erro ao recuperar resultado por request_id: {e}")
-        raise HTTPException(
-            status_code=500, detail=f"Erro ao recuperar resultado: {str(e)}"
-        )
+        raise HTTPException(status_code=500, detail=f"Erro ao recuperar resultado: {str(e)}")
 
 
-@storage_router.get(
-    "/results/image/{image_id}", response_model=List[ProcessingResponse]
-)
-async def get_results_by_image_id(
-    image_id: str, result_usecase: GetResultUseCase = Depends(get_result_usecase)
-):
+@storage_router.get("/results/image/{image_id}", response_model=List[ProcessingResponse])
+async def get_results_by_image_id(image_id: str, result_usecase: GetResultUseCase = Depends(get_result_usecase)):
     """Recupera todos os resultados de processamento para uma imagem."""
     try:
         results = await result_usecase.get_by_image_id(image_id)
@@ -137,9 +122,7 @@ async def get_results_by_image_id(
         raise
     except Exception as e:
         logger.exception(f"Erro ao recuperar resultados por image_id: {e}")
-        raise HTTPException(
-            status_code=500, detail=f"Erro ao recuperar resultados: {str(e)}"
-        )
+        raise HTTPException(status_code=500, detail=f"Erro ao recuperar resultados: {str(e)}")
 
 
 @storage_router.get("/results/user/{user_id}", response_model=List[ProcessingResponse])
@@ -164,6 +147,4 @@ async def get_results_by_user_id(
         raise
     except Exception as e:
         logger.exception(f"Erro ao recuperar resultados por user_id: {e}")
-        raise HTTPException(
-            status_code=500, detail=f"Erro ao recuperar resultados: {str(e)}"
-        )
+        raise HTTPException(status_code=500, detail=f"Erro ao recuperar resultados: {str(e)}")

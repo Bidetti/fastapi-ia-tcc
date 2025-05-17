@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
-from typing import Dict, Optional, Any, BinaryIO
 from datetime import timedelta
+from typing import Any, BinaryIO, Dict, Optional
 
 
 class S3RepositoryInterface(ABC):

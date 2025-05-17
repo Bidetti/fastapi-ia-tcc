@@ -1,6 +1,7 @@
-from typing import Dict, List, Optional, Any, Union
 from datetime import datetime, timezone
+from typing import Any, Dict, List, Optional
 from uuid import uuid4
+
 from src.shared.domain.enums.ia_model_type_enum import ModelType
 
 
@@ -85,10 +86,7 @@ class ProcessingResult:
         if processing_timestamp and isinstance(processing_timestamp, str):
             processing_timestamp = datetime.fromisoformat(processing_timestamp)
 
-        results = [
-            DetectionResult.from_dict(result_data)
-            for result_data in data.get("results", [])
-        ]
+        results = [DetectionResult.from_dict(result_data) for result_data in data.get("results", [])]
 
         return cls(
             request_id=data.get("request_id"),

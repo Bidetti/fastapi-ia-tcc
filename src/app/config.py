@@ -1,6 +1,6 @@
 # src/app/config.py
 import os
-from typing import Dict, Any, Optional
+from typing import Any, Dict
 
 
 class Settings:
@@ -20,25 +20,17 @@ class Settings:
         self.resource_prefix = f"{self.APP_NAME}-{self.ENVIRONMENT}"
 
         # DynamoDB
-        self.DYNAMODB_TABLE_NAME = os.getenv(
-            "DYNAMODB_TABLE_NAME", f"{self.resource_prefix}-results"
-        )
+        self.DYNAMODB_TABLE_NAME = os.getenv("DYNAMODB_TABLE_NAME", f"{self.resource_prefix}-results")
 
         # S3
-        self.S3_IMAGES_BUCKET = os.getenv(
-            "S3_IMAGES_BUCKET", f"{self.resource_prefix}-images"
-        )
-        self.S3_RESULTS_BUCKET = os.getenv(
-            "S3_RESULTS_BUCKET", f"{self.resource_prefix}-results"
-        )
+        self.S3_IMAGES_BUCKET = os.getenv("S3_IMAGES_BUCKET", f"{self.resource_prefix}-images")
+        self.S3_RESULTS_BUCKET = os.getenv("S3_RESULTS_BUCKET", f"{self.resource_prefix}-results")
 
         # Serviço de IA em EC2
         self.EC2_IA_ENDPOINT = os.getenv("EC2_IA_ENDPOINT", "http://localhost:8001")
         self.DETECTION_ENDPOINT = f"{self.EC2_IA_ENDPOINT}/detect"
         self.MATURATION_ENDPOINT = f"{self.EC2_IA_ENDPOINT}/maturation"
-        self.MATURATION_WITH_BOXES_ENDPOINT = (
-            f"{self.EC2_IA_ENDPOINT}/maturation-with-boxes"
-        )
+        self.MATURATION_WITH_BOXES_ENDPOINT = f"{self.EC2_IA_ENDPOINT}/maturation-with-boxes"
 
         # Timeout para requisições (em segundos)
         self.REQUEST_TIMEOUT = int(os.getenv("REQUEST_TIMEOUT", "30"))
@@ -46,20 +38,12 @@ class Settings:
         # Configurações para upload de imagens
         self.MAX_UPLOAD_SIZE_MB = int(os.getenv("MAX_UPLOAD_SIZE_MB", "10"))
         self.ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/jpg"]
-        self.PRESIGNED_URL_EXPIRY_MINUTES = int(
-            os.getenv("PRESIGNED_URL_EXPIRY_MINUTES", "15")
-        )
+        self.PRESIGNED_URL_EXPIRY_MINUTES = int(os.getenv("PRESIGNED_URL_EXPIRY_MINUTES", "15"))
 
         # Configurações para processamento combinado
-        self.ENABLE_AUTO_MATURATION = (
-            os.getenv("ENABLE_AUTO_MATURATION", "True").lower() == "true"
-        )
-        self.MIN_DETECTION_CONFIDENCE = float(
-            os.getenv("MIN_DETECTION_CONFIDENCE", "0.6")
-        )
-        self.MIN_MATURATION_CONFIDENCE = float(
-            os.getenv("MIN_MATURATION_CONFIDENCE", "0.7")
-        )
+        self.ENABLE_AUTO_MATURATION = os.getenv("ENABLE_AUTO_MATURATION", "True").lower() == "true"
+        self.MIN_DETECTION_CONFIDENCE = float(os.getenv("MIN_DETECTION_CONFIDENCE", "0.6"))
+        self.MIN_MATURATION_CONFIDENCE = float(os.getenv("MIN_MATURATION_CONFIDENCE", "0.7"))
 
         # Configurações de cache (opcional para versões futuras)
         self.ENABLE_CACHE = os.getenv("ENABLE_CACHE", "False").lower() == "true"
@@ -107,9 +91,7 @@ class Settings:
         return {
             key: value
             for key, value in self.__dict__.items()
-            if not key.startswith("_")
-            and key != "get_all_settings"
-            and key != "load_dotenv"
+            if not key.startswith("_") and key != "get_all_settings" and key != "load_dotenv"
         }
 
     def get_s3_url(self, bucket_name: str, key: str) -> str:

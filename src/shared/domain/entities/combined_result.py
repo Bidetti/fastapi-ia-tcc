@@ -1,8 +1,8 @@
-from typing import Dict, List, Optional, Any
 from datetime import datetime, timezone
+from typing import Any, Dict, List, Optional
 from uuid import uuid4
 
-from src.shared.domain.entities.result import ProcessingResult, DetectionResult
+from src.shared.domain.entities.result import DetectionResult, ProcessingResult
 from src.shared.domain.enums.ia_model_type_enum import ModelType
 
 
@@ -114,9 +114,7 @@ class CombinedResult:
         if detection_data:
             detection_timestamp = None
             if detection_data.get("processing_timestamp"):
-                detection_timestamp = datetime.fromisoformat(
-                    detection_data["processing_timestamp"]
-                )
+                detection_timestamp = datetime.fromisoformat(detection_data["processing_timestamp"])
 
             detection_results = []
             for result_data in detection_data.get("results", []):
@@ -139,9 +137,7 @@ class CombinedResult:
         if maturation_data:
             maturation_timestamp = None
             if maturation_data.get("processing_timestamp"):
-                maturation_timestamp = datetime.fromisoformat(
-                    maturation_data["processing_timestamp"]
-                )
+                maturation_timestamp = datetime.fromisoformat(maturation_data["processing_timestamp"])
 
             maturation_results = []
             for result_data in maturation_data.get("results", []):
