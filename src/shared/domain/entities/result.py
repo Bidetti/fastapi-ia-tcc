@@ -54,6 +54,7 @@ class ProcessingResult:
         summary: Optional[Dict[str, Any]] = None,
         image_result_url: Optional[str] = None,
         error_message: Optional[str] = None,
+        parent_request_id: Optional[str] = None,
     ):
         self.request_id = request_id or f"req-{uuid4()}"
         self.image_id = image_id
@@ -64,10 +65,11 @@ class ProcessingResult:
         self.summary = summary or {}
         self.image_result_url = image_result_url
         self.error_message = error_message
+        self.parent_request_id = parent_request_id
 
     def to_dict(self) -> Dict[str, Any]:
         """Converte a entidade para dicionário."""
-        return {
+        result_dict = {
             "request_id": self.request_id,
             "image_id": self.image_id,
             "model_type": self.model_type.value,
@@ -78,6 +80,11 @@ class ProcessingResult:
             "image_result_url": self.image_result_url,
             "error_message": self.error_message,
         }
+        
+        if self.parent_request_id:
+            result_dict["parent_request_id"] = self.parent_request_id
+            
+        return result_dict
 
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> "ProcessingResult":
@@ -98,4 +105,29 @@ class ProcessingResult:
             summary=data.get("summary", {}),
             image_result_url=data.get("image_result_url"),
             error_message=data.get("error_message"),
+            parent_request_id=data.get("parent_request_id"),
+        )
+
+    @classmethod
+    def from_ec2_response(cls, response: Dict[str, Any], image_id: str, model_type: ModelType) -> "ProcessingResult":
+        results = []
+        for result_data in response.get("results", []):
+            results.append(
+                DetectionResult(
+                    class_name=result_data["class_name"],
+                    confidence=result_data["confidence"],
+                    bounding_box=result_data["bounding_box"],
+                    maturation_level=result_data.get("maturation_level"),
+                )
+            )
+
+        return cls(
+            image_id=image_id,
+            model_type=model_type,
+            results=results,
+            status=response.get("status", "success"),
+            request_id=response.get("request_id"),
+            summary=response.get("summary", {}),
+            image_result_url=response.get("image_result_url"),
+            error_message=response.get("error_message"),
         )

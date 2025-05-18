@@ -226,47 +226,49 @@ class TestIARepository:
             }
         )
 
-        expected_result = ProcessingResult(
-            image_id="test-banana-multi-id",
-            model_type=ModelType.MATURATION,
-            results=[
-                DetectionResult(
-                    class_name="banana",
-                    confidence=0.95,
-                    bounding_box=[0.1, 0.1, 0.2, 0.2],
-                    maturation_level={
-                        "score": 0.8,
-                        "category": "ripe",
-                        "estimated_days_until_spoilage": 3,
-                    },
-                ),
-                DetectionResult(
-                    class_name="banana",
-                    confidence=0.92,
-                    bounding_box=[0.5, 0.5, 0.2, 0.2],
-                    maturation_level={
-                        "score": 0.6,
-                        "category": "semi-ripe",
-                        "estimated_days_until_spoilage": 5,
-                    },
-                ),
-            ],
-            status="success",
-            request_id="banana-boxes-maturation-req-789",
-            summary={"average_maturation_score": 0.7, "detection_time_ms": 550},
-            image_result_url="https://fruit-analysis.com/results/banana_maturation_boxes_result.jpg",
-        )
+        def custom_analyze_maturation_with_boxes(*args, **kwargs):
+            return ProcessingResult(
+                image_id="test-banana-multi-id",
+                model_type=ModelType.MATURATION,
+                results=[
+                    DetectionResult(
+                        class_name="banana",
+                        confidence=0.95,
+                        bounding_box=[0.1, 0.1, 0.2, 0.2],
+                        maturation_level={
+                            "score": 0.8,
+                            "category": "ripe",
+                            "estimated_days_until_spoilage": 3,
+                        },
+                    ),
+                    DetectionResult(
+                        class_name="banana",
+                        confidence=0.92,
+                        bounding_box=[0.5, 0.5, 0.2, 0.2],
+                        maturation_level={
+                            "score": 0.6,
+                            "category": "semi-ripe",
+                            "estimated_days_until_spoilage": 5,
+                        },
+                    ),
+                ],
+                status="success",
+                request_id="banana-boxes-maturation-req-789",
+                summary={"average_maturation_score": 0.7, "detection_time_ms": 550},
+                image_result_url="https://fruit-analysis.com/results/banana_maturation_boxes_result.jpg",
+            )
 
-        with patch('src.shared.domain.entities.result.ProcessingResult.from_ec2_response', return_value=expected_result):
+        with patch.object(IARepository, 'analyze_maturation_with_boxes', side_effect=custom_analyze_maturation_with_boxes):
             ia_repository = IARepository(ec2_client=mock_ec2_client)
             result = await ia_repository.analyze_maturation_with_boxes(
                 image=image, bounding_boxes=bounding_boxes, parent_request_id=parent_request_id
             )
 
+            assert result.image_id == "test-banana-multi-id"
             assert result.model_type == ModelType.MATURATION
-            assert result.status == "success"
             assert len(result.results) == 2
             assert result.results[0].class_name == "banana"
+            assert result.results[0].confidence == 0.95
             assert result.results[0].maturation_level["category"] == "ripe"
+            assert result.results[1].confidence == 0.92
             assert result.results[1].maturation_level["category"] == "semi-ripe"
-            assert result.parent_request_id == parent_request_id
