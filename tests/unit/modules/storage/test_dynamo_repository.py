@@ -1,5 +1,4 @@
-import json
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, patch
 
 import pytest
 
@@ -148,11 +147,9 @@ class TestDynamoRepository:
             assert result.results[0].confidence == 0.95
             assert result.results[0].bounding_box == [0.1, 0.1, 0.2, 0.2]
             assert result.results[0].maturation_level is None
-            
+
             mock_dynamo_client.query_items.assert_called_once_with(
-                key_name="request_id", 
-                key_value=request_id, 
-                index_name="RequestIdIndex"
+                key_name="request_id", key_value=request_id, index_name="RequestIdIndex"
             )
 
     @pytest.mark.asyncio

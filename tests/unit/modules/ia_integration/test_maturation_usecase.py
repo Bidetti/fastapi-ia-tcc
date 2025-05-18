@@ -25,7 +25,7 @@ class TestMaturationUseCase:
                 "estimated_days_until_spoilage": 3,
             },
         )
-        
+
         success_result = ProcessingResult(
             image_id="test-maturation-success-id",
             model_type=ModelType.MATURATION,

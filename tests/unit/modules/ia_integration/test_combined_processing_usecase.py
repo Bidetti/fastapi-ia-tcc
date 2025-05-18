@@ -1,12 +1,10 @@
-from unittest import mock
-from unittest.mock import AsyncMock, patch
 import uuid
+from unittest.mock import AsyncMock, patch
 
 import pytest
 
 from src.modules.ia_integration.usecase.combined_processing_usecase import CombinedProcessingUseCase
 from src.shared.domain.entities.combined_result import CombinedResult
-from src.shared.domain.entities.image import Image
 from src.shared.domain.entities.result import DetectionResult, ProcessingResult
 from src.shared.domain.enums.ia_model_type_enum import ModelType
 from src.shared.domain.models.http_models import ProcessingStatusResponse
@@ -58,19 +56,12 @@ class TestCombinedProcessingUseCase:
             maturation_result=maturation_result,
             location=location,
         )
-        expected_result.summary = {
-            "total_objects": 1,
-            "average_maturation_score": 0.8,
-            "total_processing_time_ms": 800
-        }
+        expected_result.summary = {"total_objects": 1, "average_maturation_score": 0.8, "total_processing_time_ms": 800}
 
-        with patch.object(
-            CombinedProcessingUseCase, 
-            "execute", 
-            new_callable=AsyncMock,
-            return_value=expected_result
-        ):
-            usecase = CombinedProcessingUseCase(ia_repository=mock_ia_repository, dynamo_repository=mock_dynamo_repository)
+        with patch.object(CombinedProcessingUseCase, "execute", new_callable=AsyncMock, return_value=expected_result):
+            usecase = CombinedProcessingUseCase(
+                ia_repository=mock_ia_repository, dynamo_repository=mock_dynamo_repository
+            )
             result = await usecase.execute(image_url=image_url, user_id=user_id, metadata=metadata, location=location)
 
             assert isinstance(result, CombinedResult)
@@ -103,12 +94,11 @@ class TestCombinedProcessingUseCase:
         )
 
         with patch.object(
-            CombinedProcessingUseCase, 
-            "execute", 
-            new_callable=AsyncMock,
-            return_value=combined_error_result
+            CombinedProcessingUseCase, "execute", new_callable=AsyncMock, return_value=combined_error_result
         ):
-            usecase = CombinedProcessingUseCase(ia_repository=mock_ia_repository, dynamo_repository=mock_dynamo_repository)
+            usecase = CombinedProcessingUseCase(
+                ia_repository=mock_ia_repository, dynamo_repository=mock_dynamo_repository
+            )
             result = await usecase.execute(image_url=image_url, user_id=user_id, location=location)
 
             assert isinstance(result, CombinedResult)
@@ -123,17 +113,16 @@ class TestCombinedProcessingUseCase:
         request_id = f"combined-{uuid.uuid4().hex}"
 
         with patch.object(
-            CombinedProcessingUseCase,
-            "start_processing",
-            new_callable=AsyncMock,
-            return_value=request_id
+            CombinedProcessingUseCase, "start_processing", new_callable=AsyncMock, return_value=request_id
         ):
-            usecase = CombinedProcessingUseCase(ia_repository=mock_ia_repository, dynamo_repository=mock_dynamo_repository)
+            usecase = CombinedProcessingUseCase(
+                ia_repository=mock_ia_repository, dynamo_repository=mock_dynamo_repository
+            )
             usecase._update_processing_status = AsyncMock()
             result = await usecase.start_processing(image_url=image_url, user_id=user_id)
-            
+
             assert result.startswith("combined-")
-            
+
     @pytest.mark.asyncio
     async def test_get_processing_status(self, mock_ia_repository, mock_dynamo_repository):
         usecase = CombinedProcessingUseCase(ia_repository=mock_ia_repository, dynamo_repository=mock_dynamo_repository)

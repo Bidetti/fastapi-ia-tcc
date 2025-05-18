@@ -1,9 +1,5 @@
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, patch
 
-import pytest
-from fastapi.testclient import TestClient
-
-from src.app.main import app
 from src.modules.storage.usecase.get_result_usecase import GetResultUseCase
 from src.modules.storage.usecase.image_upload_usecase import ImageUploadUseCase
 

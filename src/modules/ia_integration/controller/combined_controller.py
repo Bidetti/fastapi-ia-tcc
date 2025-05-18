@@ -1,5 +1,5 @@
-from datetime import datetime, timezone
 import logging
+from datetime import datetime, timezone
 from typing import Optional
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
@@ -97,19 +97,19 @@ async def get_combined_results(
             return None
 
         combined_result_dict = result.to_dict()
-        
+
         processing_timestamp = combined_result_dict.get("processing_timestamp")
         if processing_timestamp is None:
             processing_timestamp = datetime.now(timezone.utc).isoformat()
-        
+
         created_at = combined_result_dict.get("created_at")
         if created_at is None:
             created_at = datetime.now(timezone.utc).isoformat()
-            
+
         updated_at = combined_result_dict.get("updated_at")
         if updated_at is None:
             updated_at = datetime.now(timezone.utc).isoformat()
-        
+
         response_data = {
             "combined_id": combined_result_dict.get("combined_id"),
             "image_id": combined_result_dict.get("image_id"),
@@ -122,9 +122,9 @@ async def get_combined_results(
             "processing_timestamp": processing_timestamp,
             "created_at": created_at,
             "updated_at": updated_at,
-            "summary": combined_result_dict.get("summary", {})
+            "summary": combined_result_dict.get("summary", {}),
         }
-        
+
         return CombinedProcessingResponse(**response_data)
 
     except Exception as e:
@@ -144,19 +144,19 @@ async def get_results_by_request_id(
             return None
 
         combined_result_dict = result.to_dict()
-        
+
         processing_timestamp = combined_result_dict.get("processing_timestamp")
         if processing_timestamp is None:
             processing_timestamp = datetime.now(timezone.utc).isoformat()
-        
+
         created_at = combined_result_dict.get("created_at")
         if created_at is None:
             created_at = datetime.now(timezone.utc).isoformat()
-            
+
         updated_at = combined_result_dict.get("updated_at")
         if updated_at is None:
             updated_at = datetime.now(timezone.utc).isoformat()
-        
+
         response_data = {
             "combined_id": combined_result_dict.get("combined_id"),
             "image_id": combined_result_dict.get("image_id"),
@@ -169,9 +169,9 @@ async def get_results_by_request_id(
             "processing_timestamp": processing_timestamp,
             "created_at": created_at,
             "updated_at": updated_at,
-            "summary": combined_result_dict.get("summary", {})
+            "summary": combined_result_dict.get("summary", {}),
         }
-        
+
         return CombinedProcessingResponse(**response_data)
 
     except Exception as e:

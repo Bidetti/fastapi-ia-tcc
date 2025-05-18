@@ -3,7 +3,6 @@ from unittest.mock import AsyncMock
 import pytest
 
 from src.modules.ia_integration.usecase.detect_usecase import DetectUseCase
-from src.shared.domain.entities.image import Image
 from src.shared.domain.entities.result import ProcessingResult
 from src.shared.domain.enums.ia_model_type_enum import ModelType
 

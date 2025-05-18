@@ -1,5 +1,6 @@
 from datetime import datetime
 from unittest.mock import AsyncMock, MagicMock, patch
+
 import pytest
 
 from src.modules.status.usecase.health_check_usecase import HealthCheckUseCase
@@ -34,7 +35,7 @@ class TestHealthCheckUseCase:
             "response_time_ms": 50,
             "details": {
                 "models": [{"name": "detection", "version": "1.0"}, {"name": "maturation", "version": "1.0"}],
-                "last_check": timestamp
+                "last_check": timestamp,
             },
         }
 
@@ -79,7 +80,7 @@ class TestHealthCheckUseCase:
             "response_time_ms": 50,
             "details": {
                 "models": [{"name": "detection", "version": "1.0"}, {"name": "maturation", "version": "1.0"}],
-                "last_check": timestamp
+                "last_check": timestamp,
             },
         }
 
@@ -125,12 +126,9 @@ class TestHealthCheckUseCase:
                     "status": "healthy",
                     "message": "Serviço de IA está disponível",
                     "details": {
-                        "models": [
-                            {"name": "detection", "version": "1.0"},
-                            {"name": "maturation", "version": "1.0"}
-                        ],
-                        "last_check": timestamp
-                    }
+                        "models": [{"name": "detection", "version": "1.0"}, {"name": "maturation", "version": "1.0"}],
+                        "last_check": timestamp,
+                    },
                 }
             )
             result = await usecase._check_ai_service()
@@ -171,9 +169,7 @@ class TestHealthCheckUseCase:
     async def test_check_dynamodb_status(self):
         mock_client = MagicMock()
         table_name = "fruit-detection-dev-results"  # Use o nome real da tabela
-        mock_client.describe_table.return_value = {
-            "Table": {"TableName": table_name, "TableStatus": "ACTIVE"}
-        }
+        mock_client.describe_table.return_value = {"Table": {"TableName": table_name, "TableStatus": "ACTIVE"}}
 
         with patch("boto3.client", return_value=mock_client):
             with patch("os.environ", {"DYNAMO_TABLE_NAME": table_name}):

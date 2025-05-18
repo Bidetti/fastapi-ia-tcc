@@ -1,13 +1,8 @@
-import json
-import uuid
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from fastapi import status
 
-from src.modules.ia_integration.usecase.combined_processing_usecase import (
-    CombinedProcessingUseCase,
-)
+from src.modules.ia_integration.usecase.combined_processing_usecase import CombinedProcessingUseCase
 from src.shared.domain.entities.combined_result import CombinedResult
 from src.shared.domain.entities.result import DetectionResult, ProcessingResult
 from src.shared.domain.enums.ia_model_type_enum import ModelType

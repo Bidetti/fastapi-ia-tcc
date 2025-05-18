@@ -1,4 +1,3 @@
-import json
 import os
 import sys
 from datetime import datetime, timezone
@@ -321,7 +320,7 @@ def mock_dynamo_repository():
                 create_sample_detection_result(),
                 create_sample_maturation_result(),
             ]
-        
+
         dynamo_repo_instance.get_results_by_image_id = AsyncMock(side_effect=get_results_by_image_id_effect)
 
         async def get_results_by_user_id_effect(user_id):
@@ -329,12 +328,12 @@ def mock_dynamo_repository():
                 create_sample_detection_result(),
                 create_sample_maturation_result(),
             ]
-        
+
         dynamo_repo_instance.get_results_by_user_id = AsyncMock(side_effect=get_results_by_user_id_effect)
 
         async def get_combined_result_effect(image_id):
             return create_sample_combined_result()
-        
+
         dynamo_repo_instance.get_combined_result = AsyncMock(side_effect=get_combined_result_effect)
 
         dynamo_repo_instance.save_combined_result = AsyncMock(
@@ -365,7 +364,7 @@ def mock_ia_repository():
                 summary={"total_objects": 1, "detection_time_ms": 350},
                 image_result_url="https://fruit-analysis.com/results/banana_detection_result.jpg",
             )
-        
+
         ia_repo_instance.detect_objects = AsyncMock(side_effect=detect_objects_effect)
 
         async def analyze_maturation_effect(image):
@@ -389,7 +388,7 @@ def mock_ia_repository():
                 summary={"average_maturation_score": 0.8, "detection_time_ms": 450},
                 image_result_url="https://test-bucket.s3.amazonaws.com/results/test-key",
             )
-        
+
         ia_repo_instance.analyze_maturation = AsyncMock(side_effect=analyze_maturation_effect)
 
         async def analyze_maturation_with_boxes_effect(image, bounding_boxes, parent_request_id=None):
@@ -413,7 +412,7 @@ def mock_ia_repository():
                 summary={"average_maturation_score": 0.8, "detection_time_ms": 450},
                 image_result_url="https://test-bucket.s3.amazonaws.com/results/test-key",
             )
-        
+
         ia_repo_instance.analyze_maturation_with_boxes = AsyncMock(side_effect=analyze_maturation_with_boxes_effect)
 
         yield ia_repo_instance

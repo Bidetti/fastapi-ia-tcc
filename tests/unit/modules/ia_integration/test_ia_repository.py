@@ -1,10 +1,10 @@
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, patch
 
 import pytest
 
-from src.shared.domain.entities.result import DetectionResult, ProcessingResult
 from src.modules.ia_integration.repo.ia_repository import IARepository
 from src.shared.domain.entities.image import Image
+from src.shared.domain.entities.result import DetectionResult, ProcessingResult
 from src.shared.domain.enums.ia_model_type_enum import ModelType
 
 
@@ -258,7 +258,9 @@ class TestIARepository:
                 image_result_url="https://fruit-analysis.com/results/banana_maturation_boxes_result.jpg",
             )
 
-        with patch.object(IARepository, 'analyze_maturation_with_boxes', side_effect=custom_analyze_maturation_with_boxes):
+        with patch.object(
+            IARepository, "analyze_maturation_with_boxes", side_effect=custom_analyze_maturation_with_boxes
+        ):
             ia_repository = IARepository(ec2_client=mock_ec2_client)
             result = await ia_repository.analyze_maturation_with_boxes(
                 image=image, bounding_boxes=bounding_boxes, parent_request_id=parent_request_id

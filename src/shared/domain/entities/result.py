@@ -80,10 +80,10 @@ class ProcessingResult:
             "image_result_url": self.image_result_url,
             "error_message": self.error_message,
         }
-        
+
         if self.parent_request_id:
             result_dict["parent_request_id"] = self.parent_request_id
-            
+
         return result_dict
 
     @classmethod

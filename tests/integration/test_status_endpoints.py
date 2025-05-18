@@ -1,8 +1,5 @@
 from unittest.mock import AsyncMock, patch
 
-import pytest
-
-from src.modules.status.controller.status_controller import get_health_check_usecase
 from src.shared.domain.models.status_models import HealthCheckResponse, ServiceStatusResponse
 
 
