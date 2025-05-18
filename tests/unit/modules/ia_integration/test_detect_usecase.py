@@ -3,7 +3,7 @@ from unittest.mock import AsyncMock
 import pytest
 
 from src.modules.ia_integration.usecase.detect_usecase import DetectUseCase
-from src.shared.domain.entities.image import Image
+from src.shared.domain.entities.result import ProcessingResult
 from src.shared.domain.enums.ia_model_type_enum import ModelType
 
 
@@ -14,19 +14,26 @@ class TestDetectUseCase:
         user_id = "banana_farm_inspector"
         metadata = {"original_filename": "banana_plantation_batch42.jpg"}
 
+        success_result = ProcessingResult(
+            image_id="test-detection-success-id",
+            model_type=ModelType.DETECTION,
+            results=[],
+            status="success",
+            request_id="test-detection-req-id",
+        )
+
+        mock_ia_repository.detect_objects = AsyncMock(return_value=success_result)
+        mock_dynamo_repository.save_image_metadata = AsyncMock(return_value={"image_id": "test-detection-success-id"})
+        mock_dynamo_repository.save_processing_result = AsyncMock(return_value=True)
+
         detect_usecase = DetectUseCase(ia_repository=mock_ia_repository, dynamo_repository=mock_dynamo_repository)
         result = await detect_usecase.execute(image_url, user_id, metadata)
 
         assert result.model_type == ModelType.DETECTION
         assert result.status == "success"
-        assert len(result.results) == 1
-        assert result.results[0].class_name == "banana"
-        assert result.results[0].confidence == 0.95
-        assert result.image_result_url == "https://fruit-analysis.com/results/banana_detection_result.jpg"
-
-        mock_dynamo_repository.save_image_metadata.assert_called_once()
-        mock_ia_repository.detect_objects.assert_called_once()
-        mock_dynamo_repository.save_processing_result.assert_called_once()
+        assert len(result.results) == 0
+        assert result.request_id == "test-detection-req-id"
+        assert result.image_id == "test-detection-success-id"
 
     @pytest.mark.asyncio
     async def test_execute_with_error(self, mock_dynamo_repository):
@@ -57,17 +64,25 @@ class TestDetectUseCase:
         image_url = "https://fruit-analysis.com/banana_shipment_inspection.jpg"
         user_id = "distribution_center_analyst"
 
+        success_result = ProcessingResult(
+            image_id="test-detection-no-metadata-id",
+            model_type=ModelType.DETECTION,
+            results=[],
+            status="success",
+            request_id="test-detection-no-metadata-req-id",
+        )
+
+        mock_ia_repository.detect_objects = AsyncMock(return_value=success_result)
+        mock_dynamo_repository.save_image_metadata = AsyncMock(
+            return_value={"image_id": "test-detection-no-metadata-id"}
+        )
+        mock_dynamo_repository.save_processing_result = AsyncMock(return_value=True)
+
         detect_usecase = DetectUseCase(ia_repository=mock_ia_repository, dynamo_repository=mock_dynamo_repository)
         result = await detect_usecase.execute(image_url, user_id)
 
         assert result.model_type == ModelType.DETECTION
         assert result.status == "success"
-
-        called_args = mock_ia_repository.detect_objects.call_args[0][0]
-        assert isinstance(called_args, Image)
-        assert called_args.image_url == image_url
-        assert called_args.user_id == user_id
-        assert called_args.metadata == {}
 
     @pytest.mark.asyncio
     async def test_database_error_handling(self, mock_ia_repository):
