@@ -168,11 +168,11 @@ class TestHealthCheckUseCase:
     @pytest.mark.asyncio
     async def test_check_dynamodb_status(self):
         mock_client = MagicMock()
-        table_name = "fruit-detection-dev-results"  # Use o nome real da tabela
+        table_name = "fruit-detection-dev-results"
         mock_client.describe_table.return_value = {"Table": {"TableName": table_name, "TableStatus": "ACTIVE"}}
 
         with patch("boto3.client", return_value=mock_client):
-            with patch("os.environ", {"DYNAMO_TABLE_NAME": table_name}):
+            with patch("src.app.config.settings.DYNAMODB_TABLE_NAME", table_name):
                 usecase = HealthCheckUseCase()
                 result = await usecase._check_dynamodb_status()
 
