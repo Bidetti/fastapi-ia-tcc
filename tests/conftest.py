@@ -1,7 +1,7 @@
 import json
 import os
 import sys
-from datetime import datetime
+from datetime import datetime, timezone
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
@@ -65,7 +65,7 @@ def mock_dynamo_client():
                 "image_url": "https://test-bucket.s3.amazonaws.com/test-key",
                 "user_id": "test-user",
                 "metadata": {},
-                "upload_timestamp": datetime.utcnow().isoformat(),
+                "upload_timestamp": datetime.now(timezone.utc).isoformat(),
             }
         )
 
@@ -76,22 +76,22 @@ def mock_dynamo_client():
                     "image_id": "test-id",
                     "request_id": "test-request-id",
                     "model_type": "detection",
-                    "results": json.dumps(
-                        [
-                            {
-                                "class_name": "apple",
-                                "confidence": 0.95,
-                                "bounding_box": [0.1, 0.1, 0.2, 0.2],
-                            }
-                        ]
-                    ),
+                    "results": [
+                        {
+                            "class_name": "apple",
+                            "confidence": 0.95,
+                            "bounding_box": [0.1, 0.1, 0.2, 0.2],
+                        }
+                    ],
                     "status": "success",
-                    "processing_timestamp": datetime.utcnow().isoformat(),
-                    "summary": json.dumps({"total_objects": 1}),
+                    "processing_timestamp": datetime.now(timezone.utc).isoformat(),
+                    "summary": {"total_objects": 1},
                     "image_result_url": "https://test-bucket.s3.amazonaws.com/results/test-key",
                 }
             ]
         )
+
+        dynamo_client_instance.convert_from_dynamo_item = MagicMock(side_effect=lambda x: x)
 
         yield dynamo_client_instance
 
@@ -133,6 +133,24 @@ def mock_ec2_client():
                             "category": "ripe",
                             "estimated_days_until_spoilage": 3,
                         },
+                    }
+                ],
+                "summary": {"average_maturation_score": 0.8, "detection_time_ms": 450},
+                "image_result_url": "https://test-bucket.s3.amazonaws.com/results/test-key",
+            }
+        )
+
+        # Mock para analyze_maturation_with_boxes
+        ec2_client_instance.analyze_maturation_with_boxes = AsyncMock(
+            return_value={
+                "status": "success",
+                "request_id": "test-maturation-with-boxes-id",
+                "results": [
+                    {
+                        "class_name": "apple",
+                        "confidence": 0.95,
+                        "bounding_box": [0.1, 0.1, 0.2, 0.2],
+                        "maturation_level": {"score": 0.8, "category": "ripe", "estimated_days_until_spoilage": 3},
                     }
                 ],
                 "summary": {"average_maturation_score": 0.8, "detection_time_ms": 450},
@@ -288,29 +306,39 @@ def mock_dynamo_repository():
             )
         )
 
-        # Mock para get_result_by_request_id
-        dynamo_repo_instance.get_result_by_request_id = AsyncMock(
-            side_effect=lambda request_id: (
-                create_sample_detection_result()
-                if request_id == "test-request-id"
-                else create_sample_maturation_result() if request_id == "test-maturation-id" else None
-            )
-        )
+        async def get_result_by_request_id_side_effect(request_id):
+            if request_id == "test-request-id":
+                return create_sample_detection_result()
+            elif request_id == "test-maturation-id":
+                return create_sample_maturation_result()
+            else:
+                return None
 
-        # Mock para get_results_by_image_id
-        dynamo_repo_instance.get_results_by_image_id = AsyncMock(
-            return_value=[
+        dynamo_repo_instance.get_result_by_request_id = AsyncMock(side_effect=get_result_by_request_id_side_effect)
+
+        async def get_results_by_image_id_effect(image_id):
+            return [
                 create_sample_detection_result(),
                 create_sample_maturation_result(),
             ]
-        )
+        
+        dynamo_repo_instance.get_results_by_image_id = AsyncMock(side_effect=get_results_by_image_id_effect)
 
-        # Mock para get_results_by_user_id
-        dynamo_repo_instance.get_results_by_user_id = AsyncMock(
-            return_value=[
+        async def get_results_by_user_id_effect(user_id):
+            return [
                 create_sample_detection_result(),
                 create_sample_maturation_result(),
             ]
+        
+        dynamo_repo_instance.get_results_by_user_id = AsyncMock(side_effect=get_results_by_user_id_effect)
+
+        async def get_combined_result_effect(image_id):
+            return create_sample_combined_result()
+        
+        dynamo_repo_instance.get_combined_result = AsyncMock(side_effect=get_combined_result_effect)
+
+        dynamo_repo_instance.save_combined_result = AsyncMock(
+            return_value={"combined_id": "test-combined-id", "image_id": "test-image-id"}
         )
 
         yield dynamo_repo_instance
@@ -321,10 +349,9 @@ def mock_ia_repository():
     with patch("src.modules.ia_integration.repo.ia_repository.IARepository") as mock:
         ia_repo_instance = mock.return_value
 
-        # Mock para detect_objects
-        ia_repo_instance.detect_objects = AsyncMock(
-            side_effect=lambda image: ProcessingResult(
-                image_id=image.image_id,
+        async def detect_objects_effect(image):
+            return ProcessingResult(
+                image_id="test-image-id",
                 model_type=ModelType.DETECTION,
                 results=[
                     DetectionResult(
@@ -338,12 +365,12 @@ def mock_ia_repository():
                 summary={"total_objects": 1, "detection_time_ms": 350},
                 image_result_url="https://fruit-analysis.com/results/banana_detection_result.jpg",
             )
-        )
+        
+        ia_repo_instance.detect_objects = AsyncMock(side_effect=detect_objects_effect)
 
-        # Mock para analyze_maturation
-        ia_repo_instance.analyze_maturation = AsyncMock(
-            side_effect=lambda image: ProcessingResult(
-                image_id=image.image_id,
+        async def analyze_maturation_effect(image):
+            return ProcessingResult(
+                image_id="test-image-id",
                 model_type=ModelType.MATURATION,
                 results=[
                     DetectionResult(
@@ -362,7 +389,32 @@ def mock_ia_repository():
                 summary={"average_maturation_score": 0.8, "detection_time_ms": 450},
                 image_result_url="https://test-bucket.s3.amazonaws.com/results/test-key",
             )
-        )
+        
+        ia_repo_instance.analyze_maturation = AsyncMock(side_effect=analyze_maturation_effect)
+
+        async def analyze_maturation_with_boxes_effect(image, bounding_boxes, parent_request_id=None):
+            return ProcessingResult(
+                image_id="test-image-id",
+                model_type=ModelType.MATURATION,
+                results=[
+                    DetectionResult(
+                        class_name="apple",
+                        confidence=0.95,
+                        bounding_box=[0.1, 0.1, 0.2, 0.2],
+                        maturation_level={
+                            "score": 0.8,
+                            "category": "ripe",
+                            "estimated_days_until_spoilage": 3,
+                        },
+                    )
+                ],
+                status="success",
+                request_id="test-maturation-boxes-id",
+                summary={"average_maturation_score": 0.8, "detection_time_ms": 450},
+                image_result_url="https://test-bucket.s3.amazonaws.com/results/test-key",
+            )
+        
+        ia_repo_instance.analyze_maturation_with_boxes = AsyncMock(side_effect=analyze_maturation_with_boxes_effect)
 
         yield ia_repo_instance
 
@@ -402,3 +454,26 @@ def create_sample_maturation_result():
         summary={"average_maturation_score": 0.8, "detection_time_ms": 450},
         image_result_url="https://test-bucket.s3.amazonaws.com/results/test-key",
     )
+
+
+def create_sample_combined_result():
+    from src.shared.domain.entities.combined_result import CombinedResult
+
+    detection_result = create_sample_detection_result()
+    maturation_result = create_sample_maturation_result()
+
+    combined = CombinedResult(
+        image_id="test-image-id",
+        user_id="test-user",
+        detection_result=detection_result,
+        maturation_result=maturation_result,
+        location="test-warehouse",
+    )
+
+    combined.summary = {
+        "total_objects": 1,
+        "average_maturation_score": 0.8,
+        "total_processing_time_ms": combined.total_processing_time_ms,
+    }
+
+    return combined

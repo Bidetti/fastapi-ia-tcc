@@ -1,6 +1,6 @@
 import logging
 import uuid
-from datetime import timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Any, BinaryIO, Dict, Optional
 
 from src.app.config import settings
@@ -71,9 +71,7 @@ class S3Repository(S3RepositoryInterface):
 
         unique_id = str(uuid.uuid4())
 
-        from datetime import datetime
-
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc)
         return f"{user_id}/{now.year}/{now.month:02d}/{now.day:02d}/{unique_id}.{ext}"
 
     async def upload_file(
