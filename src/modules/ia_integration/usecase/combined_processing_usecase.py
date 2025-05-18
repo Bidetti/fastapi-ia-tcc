@@ -13,9 +13,6 @@ from src.shared.domain.models.http_models import ProcessingStatusResponse
 
 logger = logging.getLogger(__name__)
 
-# Armazenamento temporário para status dos processamentos em andamento
-PROCESSING_STATUS = {}
-
 
 class CombinedProcessingUseCase:
 
@@ -36,22 +33,25 @@ class CombinedProcessingUseCase:
         skip_maturation: bool = False,
         location: Optional[str] = None,
     ) -> str:
-        request_id = f"combined-{uuid.uuid4()}"
+        request_id = f"combined-{uuid.uuid4().hex}"
 
-        PROCESSING_STATUS[request_id] = {
-            "status": "queued",
-            "image_url": image_url,
-            "user_id": user_id,
-            "created_at": datetime.now(timezone.utc).isoformat(),
-            "updated_at": datetime.now(timezone.utc).isoformat(),
-            "progress": 0.0,
-            "skip_maturation": skip_maturation,
-            "image_id": None,
-            "detection_complete": False,
-            "maturation_complete": False,
-            "combined_id": None,
-            "error": None,
-        }
+        await self._save_processing_status(
+            request_id,
+            {
+                "status": "queued",
+                "image_url": image_url,
+                "user_id": user_id,
+                "created_at": datetime.now(timezone.utc).isoformat(),
+                "updated_at": datetime.now(timezone.utc).isoformat(),
+                "progress": 0.0,
+                "skip_maturation": skip_maturation,
+                "image_id": None,
+                "detection_complete": False,
+                "maturation_complete": False,
+                "combined_id": None,
+                "error": None,
+            },
+        )
 
         logger.info(f"Processamento combinado iniciado: {request_id} para imagem {image_url}")
 
@@ -68,22 +68,23 @@ class CombinedProcessingUseCase:
         location: Optional[str] = None,
     ) -> None:
         try:
-            if request_id not in PROCESSING_STATUS:
+            status_data = await self._get_processing_status_data(request_id)
+            if not status_data:
                 logger.error(f"ID de solicitação não encontrado: {request_id}")
                 return
 
-            self._update_processing_status(request_id, status="processing", progress=0.1)
+            await self._update_processing_status(request_id, status="processing", progress=0.1)
 
             image = Image(image_url=image_url, user_id=user_id, metadata=metadata)
             await self.dynamo_repository.save_image_metadata(image)
 
-            self._update_processing_status(request_id, image_id=image.image_id, progress=0.2)
+            await self._update_processing_status(request_id, image_id=image.image_id, progress=0.2)
 
-            self._update_processing_status(request_id, status="detecting", progress=0.3)
+            await self._update_processing_status(request_id, status="detecting", progress=0.3)
             detection_result = await self.ia_repository.detect_objects(image)
             await self.dynamo_repository.save_processing_result(detection_result)
 
-            self._update_processing_status(
+            await self._update_processing_status(
                 request_id,
                 detection_complete=True,
                 progress=0.5,
@@ -98,7 +99,7 @@ class CombinedProcessingUseCase:
 
                 await self.dynamo_repository.save_combined_result(combined_result)
 
-                self._update_processing_status(
+                await self._update_processing_status(
                     request_id,
                     status="completed",
                     progress=1.0,
@@ -117,7 +118,7 @@ class CombinedProcessingUseCase:
                         f"Realizando análise de maturação para imagem {image.image_id} "
                         f"com {len(valid_objects)} objetos válidos"
                     )
-                    self._update_processing_status(request_id, progress=0.6)
+                    await self._update_processing_status(request_id, progress=0.6)
 
                     bounding_boxes = []
                     for i, result in enumerate(valid_objects):
@@ -135,7 +136,7 @@ class CombinedProcessingUseCase:
                     )
 
                     await self.dynamo_repository.save_processing_result(maturation_result)
-                    self._update_processing_status(request_id, maturation_complete=True, progress=0.8)
+                    await self._update_processing_status(request_id, maturation_complete=True, progress=0.8)
                 else:
                     logger.info(
                         f"Nenhum objeto com confiança suficiente para análise de maturação na imagem {image.image_id}"
@@ -151,7 +152,7 @@ class CombinedProcessingUseCase:
 
             await self.dynamo_repository.save_combined_result(combined_result)
 
-            self._update_processing_status(
+            await self._update_processing_status(
                 request_id, status="completed", progress=1.0, combined_id=combined_result.combined_id
             )
 
@@ -159,8 +160,7 @@ class CombinedProcessingUseCase:
 
         except Exception as e:
             logger.exception(f"Erro no processamento combinado em background: {e}")
-
-            self._update_processing_status(request_id, status="error", progress=1.0, error=str(e))
+            await self._update_processing_status(request_id, status="error", progress=1.0, error=str(e))
 
     async def execute(
         self,
@@ -255,11 +255,8 @@ class CombinedProcessingUseCase:
             raise
 
     async def get_result_by_request_id(self, request_id: str) -> Optional[CombinedResult]:
-        if request_id not in PROCESSING_STATUS:
-            return None
-
-        status_data = PROCESSING_STATUS[request_id]
-        if status_data.get("status") != "completed":
+        status_data = await self._get_processing_status_data(request_id)
+        if not status_data or status_data.get("status") != "completed":
             return None
 
         combined_id = status_data.get("combined_id")
@@ -271,10 +268,9 @@ class CombinedProcessingUseCase:
         return None
 
     async def get_processing_status(self, request_id: str) -> Optional[ProcessingStatusResponse]:
-        if request_id not in PROCESSING_STATUS:
+        status_data = await self._get_processing_status_data(request_id)
+        if not status_data:
             return None
-
-        status_data = PROCESSING_STATUS[request_id]
 
         return ProcessingStatusResponse(
             request_id=request_id,
@@ -283,7 +279,40 @@ class CombinedProcessingUseCase:
             estimated_completion_time=None,
         )
 
-    def _update_processing_status(self, request_id: str, **kwargs):
-        if request_id in PROCESSING_STATUS:
-            PROCESSING_STATUS[request_id].update(kwargs)
-            PROCESSING_STATUS[request_id]["updated_at"] = datetime.now(timezone.utc).isoformat()
+    async def _save_processing_status(self, request_id: str, status_data: Dict[str, Any]) -> None:
+        """Salva o status de processamento no DynamoDB."""
+        try:
+            status_data["pk"] = f"PROCESSING#{request_id}"
+            status_data["sk"] = "STATUS"
+            status_data["request_id"] = request_id
+            status_data["ttl"] = int((datetime.now(timezone.utc).timestamp() + 86400))
+
+            await self.dynamo_repository.save_item("processing_status", status_data)
+        except Exception as e:
+            logger.exception(f"Erro ao salvar status de processamento para {request_id}: {e}")
+            raise
+
+    async def _get_processing_status_data(self, request_id: str) -> Optional[Dict[str, Any]]:
+        """Recupera o status de processamento do DynamoDB."""
+        try:
+            key = {"pk": f"PROCESSING#{request_id}", "sk": "STATUS"}
+            return await self.dynamo_repository.get_item("processing_status", key)
+        except Exception as e:
+            logger.exception(f"Erro ao recuperar status de processamento para {request_id}: {e}")
+            return None
+
+    async def _update_processing_status(self, request_id: str, **kwargs) -> None:
+        """Atualiza o status de processamento no DynamoDB."""
+        try:
+            status_data = await self._get_processing_status_data(request_id)
+            if not status_data:
+                logger.warning(f"Tentativa de atualizar status inexistente: {request_id}")
+                return
+
+            status_data.update(kwargs)
+            status_data["updated_at"] = datetime.now(timezone.utc).isoformat()
+
+            await self._save_processing_status(request_id, status_data)
+
+        except Exception as e:
+            logger.exception(f"Erro ao atualizar status de processamento para {request_id}: {e}")

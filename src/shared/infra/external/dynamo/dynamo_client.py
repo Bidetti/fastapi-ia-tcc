@@ -60,19 +60,17 @@ class DynamoClient:
             logger.error(f"Erro ao inserir item no DynamoDB: {e}")
             raise
 
-    async def get_item(self, key: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+    async def get_item(self, table_name: str, key: Dict[str, Any]) -> Optional[Dict[str, Any]]:
         try:
-            response = self.table.get_item(Key=key)
-            item = response.get("Item")
+            response = await self.dynamo_client.get_item(TableName=table_name, Key=key)
 
-            if not item:
-                logger.warning(f"Item não encontrado para chave: {key}")
+            if "Item" not in response:
                 return None
 
-            return self.convert_from_dynamo_item(item)
+            return self.dynamo_client.convert_from_dynamo_item(response["Item"])
         except Exception as e:
-            logger.error(f"Erro ao recuperar item do DynamoDB: {e}")
-            raise
+            logger.exception(f"Erro ao recuperar item do DynamoDB: {e}")
+            return None
 
     async def query_items(
         self, key_name: str, key_value: Any, index_name: Optional[str] = None

@@ -35,18 +35,24 @@ class TestCombinedEndpoints:
     @pytest.mark.asyncio
     async def test_get_processing_status(self, client):
         request_id = "combined-req-456"
-        status_data = {"status": "completed", "message": "Processamento concluído", "request_id": request_id}
+
+        from src.shared.domain.models.http_models import ProcessingStatusResponse
+
+        status_response = ProcessingStatusResponse(
+            request_id=request_id, status="completed", progress=1.0, estimated_completion_time=None
+        )
 
         with patch.object(
             CombinedProcessingUseCase,
             "get_processing_status",
             new_callable=AsyncMock,
-            return_value=status_data,
+            return_value=status_response,
         ) as mock_get_status:
             response = client.get(f"/combined/status/{request_id}")
 
             assert response.status_code == 200
             assert response.json()["status"] == "completed"
+            assert response.json()["request_id"] == request_id
 
             mock_get_status.assert_called_once_with(request_id)
 

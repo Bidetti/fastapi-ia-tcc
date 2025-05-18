@@ -110,47 +110,73 @@ class TestCombinedProcessingUseCase:
     async def test_start_processing_background(self, mock_ia_repository, mock_dynamo_repository):
         image_url = "https://fruit-analysis.com/banana_background.jpg"
         user_id = "banana_background_processor"
-        request_id = f"combined-{uuid.uuid4().hex}"
 
-        with patch.object(
-            CombinedProcessingUseCase, "start_processing", new_callable=AsyncMock, return_value=request_id
-        ):
+        uuid_hex = "04005e861cfb445fa3b1904a3d49e70c"
+        uuid_obj = uuid.UUID(uuid_hex)
+        request_id = f"combined-{uuid_hex}"
+
+        mock_dynamo_repository.save_item = AsyncMock()
+
+        with patch.object(uuid, "uuid4", return_value=uuid_obj):
             usecase = CombinedProcessingUseCase(
                 ia_repository=mock_ia_repository, dynamo_repository=mock_dynamo_repository
             )
-            usecase._update_processing_status = AsyncMock()
+
             result = await usecase.start_processing(image_url=image_url, user_id=user_id)
 
-            assert result.startswith("combined-")
+            result_uuid = result.replace("combined-", "").replace("-", "")
+            expected_uuid = request_id.replace("combined-", "")
+
+            assert result_uuid == expected_uuid
+
+            mock_dynamo_repository.save_item.assert_called_once()
+            call_args = mock_dynamo_repository.save_item.call_args[0]
+            assert call_args[0] == "processing_status"
+            status_data = call_args[1]
+            assert status_data["request_id"] == result
+            assert status_data["status"] == "queued"
+            assert status_data["image_url"] == image_url
+            assert status_data["user_id"] == user_id
 
     @pytest.mark.asyncio
     async def test_get_processing_status(self, mock_ia_repository, mock_dynamo_repository):
         usecase = CombinedProcessingUseCase(ia_repository=mock_ia_repository, dynamo_repository=mock_dynamo_repository)
 
-        with patch.dict(
-            "src.modules.ia_integration.usecase.combined_processing_usecase.PROCESSING_STATUS",
-            {
-                "test-request-id": {
-                    "status": "processing",
-                    "progress": 0.5,
-                    "updated_at": "2025-05-12T10:30:00+00:00",
-                }
-            },
-        ):
-            status = await usecase.get_processing_status("test-request-id")
+        mock_status_data = {
+            "pk": "PROCESSING#test-request-id",
+            "sk": "STATUS",
+            "request_id": "test-request-id",
+            "status": "processing",
+            "progress": 0.5,
+            "updated_at": "2025-05-12T10:30:00+00:00",
+        }
 
-            assert isinstance(status, ProcessingStatusResponse)
-            assert status.request_id == "test-request-id"
-            assert status.status == "processing"
-            assert status.progress == 0.5
+        mock_dynamo_repository.get_item = AsyncMock(return_value=mock_status_data)
+
+        status = await usecase.get_processing_status("test-request-id")
+
+        assert isinstance(status, ProcessingStatusResponse)
+        assert status.request_id == "test-request-id"
+        assert status.status == "processing"
+        assert status.progress == 0.5
+
+        mock_dynamo_repository.get_item.assert_called_once_with(
+            "processing_status", {"pk": "PROCESSING#test-request-id", "sk": "STATUS"}
+        )
 
     @pytest.mark.asyncio
     async def test_get_processing_status_not_found(self, mock_ia_repository, mock_dynamo_repository):
         usecase = CombinedProcessingUseCase(ia_repository=mock_ia_repository, dynamo_repository=mock_dynamo_repository)
 
-        with patch.dict("src.modules.ia_integration.usecase.combined_processing_usecase.PROCESSING_STATUS", {}):
-            status = await usecase.get_processing_status("non-existent-id")
-            assert status is None
+        mock_dynamo_repository.get_item = AsyncMock(return_value=None)
+
+        status = await usecase.get_processing_status("non-existent-id")
+
+        assert status is None
+
+        mock_dynamo_repository.get_item.assert_called_once_with(
+            "processing_status", {"pk": "PROCESSING#non-existent-id", "sk": "STATUS"}
+        )
 
     @pytest.mark.asyncio
     async def test_get_combined_result(self, mock_ia_repository, mock_dynamo_repository):
